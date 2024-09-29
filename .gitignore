@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+**/.DS_Store
+
+
+# Ableton 
+# macOS - folder icons
+**/Icon
+**/Icon_
+**/Icon?
+
+# Ableton - analysis files: https://www.ableton.com/en/manual/managing-files-and-sets/#analysis-files-asd
+**/*.asd
+
+# Ableton - backup project files
+Ableton /Plugin SOTA Tests Project/Backup/**/*.als
