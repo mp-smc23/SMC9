@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "External/shift-stretch.h"
 
 //==============================================================================
 /**
@@ -55,5 +56,23 @@ public:
 
 private:
     //==============================================================================
+    void getParametersValues();
+    
+    //==============================================================================
+    
+    juce::AudioParameterChoice* pitchTypeParam;
+    
+    juce::AudioParameterFloat* pitchShiftParam;
+    juce::SmoothedValue<float> pitchShiftSmoothing; // TODO use smoothing
+
+    float pitchShift{1.f};
+    
+    HybridPhaseStretch stretch;
+    
+    const float pitchBlockMs{120.f};
+    
+    std::vector<float *> outputPointers;
+    std::vector<std::vector<float>> outputBuffer;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PitchShifterAudioProcessor)
 };

@@ -6,6 +6,8 @@
   ==============================================================================
 */
 
+// TODO report latency for DAW
+
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -22,6 +24,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
                        )
 #endif
 {
+    addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", 0.5f, 2.f, 1.f));
+    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith","SNT","Other"}, 0));
 }
 
 PitchShifterAudioProcessor::~PitchShifterAudioProcessor()
@@ -93,8 +97,15 @@ void PitchShifterAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    const auto channels = getTotalNumInputChannels();
+    const auto blockPitchSamples = int(sampleRate * 0.001 * pitchBlockMs);
+    stretch.configure(channels, blockPitchSamples, blockPitchSamples/4);
+    
+    outputPointers.resize(channels);
+    outputBuffer.resize(channels);
+    for(auto& ab : outputBuffer){
+        ab.resize(samplesPerBlock);
+    }
 }
 
 void PitchShifterAudioProcessor::releaseResources()
@@ -129,32 +140,32 @@ bool PitchShifterAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 }
 #endif
 
+void PitchShifterAudioProcessor::getParametersValues(){
+    pitchShift = pitchShiftParam->get();
+}
+
 void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    const auto totalNumInputChannels  = getTotalNumInputChannels();
+    const auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+    const auto channels = totalNumInputChannels;
+    const auto numSamples = buffer.getNumSamples();
+    
+    stretch.setFreqFactor(pitchShift);
+    
+    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
+        outputPointers[c] = outputBuffer[c].data();
+    }
+    
+    stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputPointers.data(), numSamples);
+    
+    for (int c = 0; c < channels; ++c) {
+        buffer.copyFrom(c, 0, outputPointers[c], numSamples);
     }
 }
 
