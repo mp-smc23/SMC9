@@ -24,8 +24,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
                        )
 #endif
 {
-    addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", 0.2f, 5.f, 1.f));
-    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith","SNT","Other"}, 0));
+    addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
+    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
 }
 
 PitchShifterAudioProcessor::~PitchShifterAudioProcessor()
@@ -98,10 +98,20 @@ void PitchShifterAudioProcessor::changeProgramName (int index, const juce::Strin
 void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     const auto channels = getTotalNumInputChannels();
-//    const auto blockPitchSamples = int(sampleRate * 0.001 * pitchBlockMs);
-//    stretch.configure(channels, blockPitchSamples, blockPitchSamples/4);
 
-    stretch.presetDefault(channels, sampleRate);
+//    stretch.presetDefault(channels, sampleRate);
+    const auto blockSamples = static_cast<int>(sampleRate * 0.001 * pitchBlockMs);
+    const auto hopSizeSamples = static_cast<int>(blockSamples / 4);
+    stretch.configure(channels, blockSamples, hopSizeSamples);
+    
+    setLatencySamples(stretch.inputLatency() + stretch.outputLatency());
+
+    // query the current configuration
+    DBG("Block Samples: " << stretch.blockSamples());
+    DBG("Interval Samples: " << stretch.intervalSamples());
+    DBG("============ LATENCY ============");
+    DBG("Input: " << stretch.inputLatency() << "| Output: " << stretch.outputLatency() << "| Total: " << (stretch.inputLatency() + stretch.outputLatency()) << " | Total (ms): " << ((stretch.inputLatency() + stretch.outputLatency())/sampleRate * 1000));
+    
     outputPointers.resize(channels);
     outputBuffer.resize(channels);
     for(auto& ab : outputBuffer){
