@@ -1,3 +1,6 @@
 [submodule "libs/dsp"]
 	path = libs/dsp
 	url = https://github.com/Signalsmith-Audio/dsp.git
+[submodule "libs/stretch"]
+	path = libs/stretch
+	url = https://github.com/Signalsmith-Audio/signalsmith-stretch.git
