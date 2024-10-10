@@ -24,7 +24,7 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
                        )
 #endif
 {
-    addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", 0.5f, 2.f, 1.f));
+    addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", 0.2f, 5.f, 1.f));
     addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith","SNT","Other"}, 0));
 }
 
@@ -98,9 +98,10 @@ void PitchShifterAudioProcessor::changeProgramName (int index, const juce::Strin
 void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     const auto channels = getTotalNumInputChannels();
-    const auto blockPitchSamples = int(sampleRate * 0.001 * pitchBlockMs);
-    stretch.configure(channels, blockPitchSamples, blockPitchSamples/4);
-    
+//    const auto blockPitchSamples = int(sampleRate * 0.001 * pitchBlockMs);
+//    stretch.configure(channels, blockPitchSamples, blockPitchSamples/4);
+
+    stretch.presetDefault(channels, sampleRate);
     outputPointers.resize(channels);
     outputBuffer.resize(channels);
     for(auto& ab : outputBuffer){
@@ -156,12 +157,13 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const auto channels = totalNumInputChannels;
     const auto numSamples = buffer.getNumSamples();
     
-    stretch.setFreqFactor(pitchShift);
+    getParametersValues();
     
     for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
         outputPointers[c] = outputBuffer[c].data();
     }
     
+    stretch.setTransposeFactor(pitchShift);
     stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputPointers.data(), numSamples);
     
     for (int c = 0; c < channels; ++c) {

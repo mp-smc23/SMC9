@@ -132,6 +132,7 @@
 		C6A890176C513FA45BB20EA0 /* PluginEditor.h */ /* PluginEditor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PluginEditor.h; path = ../../Source/PluginEditor.h; sourceTree = SOURCE_ROOT; };
 		C7FBF2ADD9F146A363AD2825 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		CAAF8DCCA7D3AE6F4099E87B /* include_juce_audio_utils.mm */ /* include_juce_audio_utils.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_utils.mm; path = ../../JuceLibraryCode/include_juce_audio_utils.mm; sourceTree = SOURCE_ROOT; };
+		CD77CF93BEA0B035CF3140A3 /* signalsmith-stretch.h */ /* signalsmith-stretch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "signalsmith-stretch.h"; path = "../../Source/External/signalsmith-stretch.h"; sourceTree = SOURCE_ROOT; };
 		D2286CFB7138DAF5F3235DE9 /* DiscRecording.framework */ /* DiscRecording.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DiscRecording.framework; path = System/Library/Frameworks/DiscRecording.framework; sourceTree = SDKROOT; };
 		D913D93FB666618FD0E20848 /* include_juce_core.mm */ /* include_juce_core.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_core.mm; path = ../../JuceLibraryCode/include_juce_core.mm; sourceTree = SOURCE_ROOT; };
 		DACBFB5939B1F11EE72B1654 /* include_juce_gui_basics.mm */ /* include_juce_gui_basics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_gui_basics.mm; path = ../../JuceLibraryCode/include_juce_gui_basics.mm; sourceTree = SOURCE_ROOT; };
@@ -372,6 +373,7 @@
 			isa = PBXGroup;
 			children = (
 				8ACC222F408D955954D1C741,
+				CD77CF93BEA0B035CF3140A3,
 			);
 			name = External;
 			sourceTree = "<group>";

@@ -7,6 +7,8 @@
     <GROUP id="{EF5953AD-22A1-C5A4-9A33-261E2A864F32}" name="Source">
       <GROUP id="{8BBDAFF1-DB16-7E68-ABE7-09810ECEE9A4}" name="External">
         <FILE id="ZPO5wF" name="shift-stretch.h" compile="0" resource="0" file="Source/External/shift-stretch.h"/>
+        <FILE id="ErZR6J" name="signalsmith-stretch.h" compile="0" resource="0"
+              file="Source/External/signalsmith-stretch.h"/>
       </GROUP>
       <FILE id="VLB13K" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

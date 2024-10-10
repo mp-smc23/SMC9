@@ -9,7 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "External/shift-stretch.h"
+//#include "External/shift-stretch.h"
+#include "External/signalsmith-stretch.h"
 
 //==============================================================================
 /**
@@ -67,7 +68,7 @@ private:
 
     float pitchShift{1.f};
     
-    HybridPhaseStretch stretch;
+    signalsmith::stretch::SignalsmithStretch<float> stretch;
     
     const float pitchBlockMs{120.f};
     
