@@ -3,8 +3,10 @@ import librosa
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import signal
 
 import sounddevice as sd
+import soundfile as sf
 
 import config
 
@@ -46,22 +48,54 @@ def plotSTN(x, xs, xt, xn, sr):
     plt.tight_layout()
     plt.show()
 
+def move_env(x: float, att: float, rel: float, env: float):
+    x = np.abs(x)
+    if x > env:
+        env += att * (x - env)
+    else:
+        env += rel * (x - env)
+    return env
 
-def move_transients(x, stretch_ratio=2.0):
+
+
+def move_transients(x, sr, stretch_ratio=2.0):
+    attack = 1000 / (sr * 2.23)
+    release = 1000 / (sr * 10.40)
+    attackControl = 1000 / (sr * 60.84)
+    releaseControl = 1000 / (sr * 8.67)
+
+    # TODO transient detection by envelope following 
+    env = [0]
+    envCtrl = [0]
+
     processing_transient = False
     t_start = 0
     eps = 1e-8
     output = np.zeros(int(len(x) * stretch_ratio))
     for i in range(len(x)):
-        if processing_transient:
-            if x[i] < eps:
-                t_start_stretched = int(t_start * stretch_ratio)
-                t_len = i - t_start
-                output[t_start_stretched : t_start_stretched + t_len] = x[t_start : i]
-                processing_transient = False
-        elif x[i] > eps:
-                t_start = i
-                processing_transient = True
+        env.append(move_env(x[i], attack, release, env[-1]))
+        envCtrl.append(move_env(x[i], attackControl, releaseControl, envCtrl[-1]))
+
+        if not processing_transient and env[-1] > envCtrl[-1]:
+            # ! new transient
+            # Copy previous transient
+            t_start_stretched = int(t_start * stretch_ratio)
+            t_len = i - t_start
+            window = signal.windows.tukey(t_len)
+            output[t_start_stretched : t_start_stretched + t_len] = x[t_start : i] * window
+
+            # Update transient start
+            t_start = i
+            processing_transient = True
+        elif env[-1] - 0.0005 < envCtrl[-1]:
+            processing_transient = False
+            
+    
+    if config.visualize:
+        plt.plot(x)
+        plt.plot(env)
+        plt.plot(envCtrl)
+        plt.show()  
     return output
 
 def noise_morphing(x, stretch_ratio=2.0):
@@ -185,7 +219,6 @@ inverseTimeStretchRatio = 1.0 / timeStretchRatio
 
 # Sines - phase vocoder
 xs_stretched = librosa.effects.time_stretch(xs, rate=inverseTimeStretchRatio) # for some reason 0.5 == 2
-
 if config.visualize:
     plt.figure(figsize=(10, 10))
     plt.subplot(2,1,1)
@@ -196,19 +229,17 @@ if config.visualize:
 
 
 # Transients - just moved in time
-xt_stretched = move_transients(xt, timeStretchRatio)
-
-if config.visualize:
-    plt.figure(figsize=(10, 10))
-    plt.subplot(2,1,1)
-    plotAudio(np.concatenate([xt, np.zeros(len(xt))]), Fs, 'Transients')
-    plt.subplot(2,1,2)
-    plotAudio(xt_stretched, Fs, 'Stretched Transients')
-    plt.show()
+xt_stretched = move_transients(xt, Fs, timeStretchRatio)
+# if config.visualize:
+plt.figure(figsize=(10, 10))
+plt.subplot(2,1,1)
+plotAudio(np.concatenate([xt, np.zeros(len(xt))]), Fs, 'Transients')
+plt.subplot(2,1,2)
+plotAudio(xt_stretched, Fs, 'Stretched Transients')
+plt.show()
 
 # Noise - Noise Morphing
 xn_stretched = noise_morphing(xn, timeStretchRatio)
-
 if config.visualize:
     plt.figure(figsize=(10, 10))
     plt.subplot(2,1,1)
@@ -220,14 +251,26 @@ if config.visualize:
 # Combine the three components
 output = xs_stretched + xt_stretched + xn_stretched
 
+if config.save_audio:
+    # sf.write('Audio/noise.wav', xn, Fs)
+    # sf.write('Audio/transients.wav', xt, Fs)
+    # sf.write('Audio/sines.wav', xs, Fs)
+
+    # sf.write('Audio/nm_ts_x2_noise.wav', xn_stretched, Fs)
+    sf.write('Audio/nm_ts_x2_transients_TD.wav', xt_stretched, Fs)
+    # sf.write('Audio/nm_ts_x2_sines.wav', xs_stretched, Fs)
+    # sf.write('Audio/nm_ts_x2_output.wav', output, Fs)
+
 input('Press Enter to play the input...')
-sd.play(audioInput, Fs)
+sd.play(xt, Fs)
 
 input('Press Enter to play the output...')
-sd.play(output, Fs)
+sd.play(xt_stretched, Fs)
+ 
+input('Press Enter to continue')
 
-# if config.visualize:
-plotAudio(output, Fs, 'Output')
-plt.show()
+if config.visualize:
+    plotAudio(output, Fs, 'Output')
+    plt.show()
 
 
