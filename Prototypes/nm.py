@@ -230,13 +230,13 @@ if config.visualize:
 
 # Transients - just moved in time
 xt_stretched = move_transients(xt, Fs, timeStretchRatio)
-# if config.visualize:
-plt.figure(figsize=(10, 10))
-plt.subplot(2,1,1)
-plotAudio(np.concatenate([xt, np.zeros(len(xt))]), Fs, 'Transients')
-plt.subplot(2,1,2)
-plotAudio(xt_stretched, Fs, 'Stretched Transients')
-plt.show()
+if config.visualize:
+    plt.figure(figsize=(10, 10))
+    plt.subplot(2,1,1)
+    plotAudio(np.concatenate([xt, np.zeros(len(xt))]), Fs, 'Transients')
+    plt.subplot(2,1,2)
+    plotAudio(xt_stretched, Fs, 'Stretched Transients')
+    plt.show()
 
 # Noise - Noise Morphing
 xn_stretched = noise_morphing(xn, timeStretchRatio)
@@ -252,14 +252,14 @@ if config.visualize:
 output = xs_stretched + xt_stretched + xn_stretched
 
 if config.save_audio:
-    # sf.write('Audio/noise.wav', xn, Fs)
-    # sf.write('Audio/transients.wav', xt, Fs)
-    # sf.write('Audio/sines.wav', xs, Fs)
+    sf.write('Audio/noise.wav', xn, Fs)
+    sf.write('Audio/transients.wav', xt, Fs)
+    sf.write('Audio/sines.wav', xs, Fs)
 
-    # sf.write('Audio/nm_ts_x2_noise.wav', xn_stretched, Fs)
+    sf.write('Audio/nm_ts_x2_noise.wav', xn_stretched, Fs)
     sf.write('Audio/nm_ts_x2_transients_TD.wav', xt_stretched, Fs)
-    # sf.write('Audio/nm_ts_x2_sines.wav', xs_stretched, Fs)
-    # sf.write('Audio/nm_ts_x2_output.wav', output, Fs)
+    sf.write('Audio/nm_ts_x2_sines.wav', xs_stretched, Fs)
+    sf.write('Audio/nm_ts_x2_output.wav', output, Fs)
 
 input('Press Enter to play the input...')
 sd.play(xt, Fs)
