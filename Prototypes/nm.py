@@ -64,7 +64,6 @@ def move_transients(x, sr, stretch_ratio=2.0):
     attackControl = 1000 / (sr * 60.84)
     releaseControl = 1000 / (sr * 8.67)
 
-    # TODO transient detection by envelope following 
     env = [0]
     envCtrl = [0]
 
@@ -101,15 +100,16 @@ def move_transients(x, sr, stretch_ratio=2.0):
 def noise_morphing(x, stretch_ratio=2.0):
     fft_size = window_size = 2048
     hop = fft_size // 2
+    window = np.hanning(window_size)
 
     # stft
-    X = librosa.stft(x, n_fft=fft_size, hop_length=hop, window='hann')
+    X = librosa.stft(x, n_fft=fft_size, hop_length=hop, window=window)
     print("STFT:", X.shape)
 
     Xn_db = 10 * np.log10(np.abs(X)) # log-magnitude spectrum
 
     Xn_len = X.shape[1] # number of frames
-    Xn_stretched_len = int(Xn_len * stretch_ratio) - 1 # number of frames after stretching (-1 to fix stft padding)
+    Xn_stretched_len = int(np.ceil(Xn_len * stretch_ratio)) - 1 # number of frames after stretching (-1 to fix stft padding)
 
     Xn_stretched_db = np.zeros((X.shape[0], Xn_stretched_len)) # output array
 
@@ -179,17 +179,19 @@ def noise_morphing(x, stretch_ratio=2.0):
 
     Xn_stretched = 10**(Xn_stretched_db / 10) # inverse log-magnitude spectrum
     
-    white_noise = np.random.normal(0, 1, int(len(x)*stretch_ratio)) # generate white noise
-    E = librosa.stft(white_noise, n_fft=fft_size, hop_length=hop, window='hann') # run stft on it 
+    white_noise = np.random.normal(0, 1, int(np.ceil(len(x)*stretch_ratio))) # generate white noise
+    E = librosa.stft(white_noise, n_fft=fft_size, hop_length=hop, window=window) # run stft on it 
     assert E.shape[1] == Xn_stretched.shape[1]
 
-    window = np.hanning(window_size)
-    E = 2 * np.abs(E) / np.sum(window) # normalize by the window energy to ensure spectral magnitude equals 1
+    E = E / np.sqrt(np.sum(window**2)) # normalize by the window energy to ensure spectral magnitude equals 1
 
     # multiply each frame of the white noise by the interpolated frame of the input's noise (Xn_stretched)
     Xn_stretched = Xn_stretched * E # element wise multiplication
 
-    return librosa.istft(Xn_stretched, n_fft=fft_size, hop_length=hop, window='hann')
+    plt.plot(Xn_stretched[:,0])
+    plt.show()
+
+    return librosa.istft(Xn_stretched, n_fft=fft_size, hop_length=hop, window=window)
 
 
 # Load audio file using librosa 
@@ -209,10 +211,6 @@ print(f"Window 2 Size = {nWin2}")
 print("Decomposing STN...")
 [xs, xt, xn] = STN.decSTN(audioInput, Fs, nWin1, nWin2)
 
-
-if config.visualize: 
-    # Plot the STN results
-    plotSTN(audioInput, xs, xt, xn, Fs)
 
 timeStretchRatio = 2.0
 inverseTimeStretchRatio = 1.0 / timeStretchRatio
@@ -251,23 +249,30 @@ if config.visualize:
 # Combine the three components
 output = xs_stretched + xt_stretched + xn_stretched
 
+if config.visualize:
+    plotSTN(audioInput, xs, xt, xn, Fs)
+    plotSTN(output, xs_stretched, xt_stretched, xn_stretched, Fs)
+
+# Save audio files
 if config.save_audio:
     sf.write('Audio/noise.wav', xn, Fs)
     sf.write('Audio/transients.wav', xt, Fs)
     sf.write('Audio/sines.wav', xs, Fs)
 
     sf.write('Audio/nm_ts_x2_noise.wav', xn_stretched, Fs)
-    sf.write('Audio/nm_ts_x2_transients_TD.wav', xt_stretched, Fs)
     sf.write('Audio/nm_ts_x2_sines.wav', xs_stretched, Fs)
+    sf.write('Audio/nm_ts_x2_transients.wav', xt_stretched, Fs)
     sf.write('Audio/nm_ts_x2_output.wav', output, Fs)
 
-input('Press Enter to play the input...')
-sd.play(xt, Fs)
+if config.play_audio:
+    input('Press Enter to play the input...')
+    sd.play(xn, Fs)
 
-input('Press Enter to play the output...')
-sd.play(xt_stretched, Fs)
- 
-input('Press Enter to continue')
+    input('Press Enter to play the output...')
+    sd.play(xn_stretched, Fs)
+
+    input('Press Enter to continue')
+
 
 if config.visualize:
     plotAudio(output, Fs, 'Output')
