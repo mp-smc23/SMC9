@@ -188,14 +188,11 @@ def noise_morphing(x, stretch_ratio=2.0):
     # multiply each frame of the white noise by the interpolated frame of the input's noise (Xn_stretched)
     Xn_stretched = Xn_stretched * E # element wise multiplication
 
-    plt.plot(Xn_stretched[:,0])
-    plt.show()
-
     return librosa.istft(Xn_stretched, n_fft=fft_size, hop_length=hop, window=window)
 
-
+audio_file = "Drum Loop"
 # Load audio file using librosa 
-audioInput, Fs = librosa.load('../Evaluation/Audio/Soft Spot.aif', sr=None)
+audioInput, Fs = librosa.load(f"../Evaluation/Audio/{audio_file}.aif", sr=None)
 
 nWin1 = 8192 # samples
 nWin2 = 512 # samples
@@ -255,14 +252,15 @@ if config.visualize:
 
 # Save audio files
 if config.save_audio:
-    sf.write('Audio/noise.wav', xn, Fs)
-    sf.write('Audio/transients.wav', xt, Fs)
-    sf.write('Audio/sines.wav', xs, Fs)
+    sf.write(f"Audio/{audio_file}_noise.wav", xn, Fs)
+    sf.write(f"Audio/{audio_file}_transients.wav", xt, Fs)
+    sf.write(f"Audio/{audio_file}_sines.wav", xs, Fs)
 
-    sf.write('Audio/nm_ts_x2_noise.wav', xn_stretched, Fs)
-    sf.write('Audio/nm_ts_x2_sines.wav', xs_stretched, Fs)
-    sf.write('Audio/nm_ts_x2_transients.wav', xt_stretched, Fs)
-    sf.write('Audio/nm_ts_x2_output.wav', output, Fs)
+    sf.write(f"Audio/librosa_x2_{audio_file}.wav", librosa.effects.time_stretch(audioInput, rate=0.5), Fs)
+    sf.write(f"Audio/nm_ts_x2_{audio_file}_sines.wav", xs_stretched, Fs)
+    sf.write(f"Audio/nm_ts_x2_{audio_file}_noise.wav", xn_stretched, Fs)
+    sf.write(f"Audio/nm_ts_x2_{audio_file}_transients.wav", xt_stretched, Fs)
+    sf.write(f"Audio/nm_ts_x2_{audio_file}_output.wav", output, Fs)
 
 if config.play_audio:
     input('Press Enter to play the input...')
