@@ -19,29 +19,29 @@ def noise_stretching(x, stretch_ratio=2.0):
     if config.visualize:
         plt.figure(figsize=(10, 10))
         plt.subplot(5,2,1)
-        plt.plot(Xn_stretched_db[:,0])
-        plt.subplot(5,2,2)
         plt.plot(Xn_db[:,0])
+        plt.subplot(5,2,2)
+        plt.plot(Xn_stretched_db[:,0])
 
         plt.subplot(5,2,3)
-        plt.plot(Xn_stretched_db[:,1])
+        plt.plot(Xn_db[:,1])
         plt.subplot(5,2,4)
         plt.plot()
 
         plt.subplot(5,2,5)
-        plt.plot(Xn_stretched_db[:,2])
+        plt.plot(Xn_db[:,2])
         plt.subplot(5,2,6)
-        plt.plot(Xn_db[:,1])
+        plt.plot(Xn_stretched_db[:,1])
 
         plt.subplot(5,2,7)
-        plt.plot(Xn_stretched_db[:,3])
+        plt.plot(Xn_db[:,3])
         plt.subplot(5,2,8)
         plt.plot()
         
         plt.subplot(5,2,9)
-        plt.plot(Xn_stretched_db[:,4])
+        plt.plot(Xn_db[:,4])
         plt.subplot(5,2,10)
-        plt.plot(Xn_db[:,2])
+        plt.plot(Xn_stretched_db[:,2])
 
         plt.show()
 
@@ -70,7 +70,10 @@ def frames_interpolation(x: np.ndarray, stretch_ratio: float = 2.0) -> np.ndarra
     """
 
     x_len = x.shape[1] # number of frames
-    x_stretched_len = int(np.ceil(x_len * stretch_ratio)) - 1 # number of frames after stretching (-1 to fix stft padding)
+    x_stretched_len = int(np.ceil(x_len * stretch_ratio)) # number of frames after stretching 
+    
+    if stretch_ratio > 1: # fixing stft padding
+        x_stretched_len -= 1
 
     x_stretched = np.zeros((x.shape[0], x_stretched_len)) # output array
 
@@ -92,7 +95,7 @@ def frames_interpolation(x: np.ndarray, stretch_ratio: float = 2.0) -> np.ndarra
 
     # Interpolation
     for i in range(1, x_stretched_len-1):
-        if i > next_idx:
+        while i > next_idx:
             j += 1
 
             prev_idx = next_idx
@@ -130,6 +133,8 @@ def noise_morphing(x: np.ndarray, original_signal_len: int, n_fft: int, window: 
 
     E = librosa.stft(white_noise, n_fft=n_fft, hop_length=hop_length, window=window) # run stft on it 
 
+    print("E", E.shape)
+    print("x", x.shape)
     assert E.shape[1] == x.shape[1]
 
     E = E / np.sqrt(np.sum(window**2)) # normalize by the window energy to ensure spectral magnitude equals 1

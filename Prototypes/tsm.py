@@ -61,7 +61,7 @@ def move_transients(x, sr, stretch_ratio=2.0):
     return output
 
 
-audio_file = "Drum Loop"
+audio_file = "Soft Spot"
 # Load audio file using librosa 
 audioInput, Fs = librosa.load(f"../Evaluation/Audio/{audio_file}.aif", sr=None)
 
@@ -80,7 +80,7 @@ print("Decomposing STN...")
 [xs, xt, xn] = STN.decSTN(audioInput, Fs, nWin1, nWin2)
 
 
-timeStretchRatio = 2.0
+timeStretchRatio = 0.5
 inverseTimeStretchRatio = 1.0 / timeStretchRatio
 
 # Sines - phase vocoder
@@ -95,7 +95,7 @@ if config.visualize:
 
 
 # Transients - just moved in time
-xt_stretched = move_transients(xt, Fs, timeStretchRatio)
+xt_stretched = np.zeros(int(len(xt) * timeStretchRatio)) # move_transients(xt, Fs, timeStretchRatio)
 if config.visualize:
     plt.figure(figsize=(10, 10))
     plt.subplot(2,1,1)
@@ -115,7 +115,7 @@ if config.visualize:
     plt.show()
 
 # Combine the three components
-output = xs_stretched + xt_stretched + xn_stretched
+output = xs_stretched + xn_stretched # + xt_stretched 
 
 if config.visualize:
     ploting.plotSTN(audioInput, xs, xt, xn, Fs)
@@ -135,7 +135,7 @@ if config.save_audio:
 
 if config.play_audio:
     input('Press Enter to play the input...')
-    sd.play(xn, Fs)
+    sd.play(audioInput, Fs)
 
     input('Press Enter to play the output...')
     sd.play(output, Fs)
