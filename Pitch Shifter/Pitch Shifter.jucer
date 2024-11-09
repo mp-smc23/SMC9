@@ -5,6 +5,22 @@
               pluginVSTCategory="kPlugCategEffect" pluginVST3Category="Fx,Pitch Shift">
   <MAINGROUP id="hvmnEB" name="Pitch Shifter">
     <GROUP id="{EF5953AD-22A1-C5A4-9A33-261E2A864F32}" name="Source">
+      <GROUP id="{A388F90C-D776-B383-6A94-8AC8C6CD7105}" name="DSP">
+        <GROUP id="{9C3B68F5-6C43-D588-37CC-BA4D7F8C4A4D}" name="Resampling">
+          <FILE id="MkAqt8" name="Resample.cpp" compile="1" resource="0" file="Source/DSP/Resampling/Resample.cpp"/>
+          <FILE id="PQYjnV" name="Resample.h" compile="0" resource="0" file="Source/DSP/Resampling/Resample.h"/>
+        </GROUP>
+        <GROUP id="{4E947770-8F6C-4524-F2DB-D4CEE753AE16}" name="NM">
+          <FILE id="KdhwlK" name="NoiseMorphing.cpp" compile="1" resource="0"
+                file="Source/DSP/NM/NoiseMorphing.cpp"/>
+          <FILE id="hrWJNP" name="NoiseMorphing.h" compile="0" resource="0" file="Source/DSP/NM/NoiseMorphing.h"/>
+        </GROUP>
+        <GROUP id="{12EC0C24-852D-C4A0-D451-1E0E191427FE}" name="STN">
+          <FILE id="pZLdGZ" name="decomposeSTN.cpp" compile="1" resource="0"
+                file="Source/DSP/STN/decomposeSTN.cpp"/>
+          <FILE id="VOQJo5" name="decomposeSTN.h" compile="0" resource="0" file="Source/DSP/STN/decomposeSTN.h"/>
+        </GROUP>
+      </GROUP>
       <GROUP id="{8BBDAFF1-DB16-7E68-ABE7-09810ECEE9A4}" name="External">
         <FILE id="ZPO5wF" name="shift-stretch.h" compile="0" resource="0" file="Source/External/shift-stretch.h"/>
         <FILE id="ErZR6J" name="signalsmith-stretch.h" compile="0" resource="0"

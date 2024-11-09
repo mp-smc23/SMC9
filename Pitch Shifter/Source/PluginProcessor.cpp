@@ -25,7 +25,7 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
 #endif
 {
     addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
-    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
+//    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
 }
 
 PitchShifterAudioProcessor::~PitchShifterAudioProcessor()
