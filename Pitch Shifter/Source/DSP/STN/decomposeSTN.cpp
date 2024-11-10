@@ -9,7 +9,7 @@ void dsp::DecomposeSTN::setWindowS(const int newWindowSizeS) {
     // Assert power of two
     const auto winSize = newWindowSizeS - (newWindowSizeS % 2);
     DBG("New Window Size S = " + juce::String(winSize));
-    windowSizeTN = winSize;
+    windowSizeS = winSize;
 
     prepare();
 }
@@ -28,11 +28,15 @@ void dsp::DecomposeSTN::fuzzySTN(Vec1D &S, Vec1D &T, Vec1D &N,
                                  const Vec1D& xReal, const float G1, const float G2,
                                  const int medFilterHorizontalSize,
                                  const int medFilterVerticalSize,
-                                 std::deque<std::vector<float>>& filterHorizontal) {
+                                 Vec1D& filterV,
+                                 std::deque<std::vector<float>>& filterH) {
 
     const auto len = xReal.size();
-    const auto xHorizonal = filterHorizonal(xReal, filterHorizontal, medFilterHorizontalSize);
-    const auto xVertical = filterVertical(xReal, medFilterVerticalSize);
+    Vec1D xAbs(len);
+    juce::FloatVectorOperations::abs(xAbs.data(), xReal.data(), len);
+    
+    const auto xHorizonal = filterHorizonal(xAbs, filterH, medFilterHorizontalSize);
+    const auto xVertical = filterVertical(xAbs, filterV, medFilterVerticalSize);
     auto rt = transientness(xHorizonal, xVertical);
 
     const auto tmp = juce::MathConstants<float>::pi / (2 * (G1 - G2));
@@ -67,7 +71,7 @@ Vec1D dsp::DecomposeSTN::transientness(const Vec1D &xHorizontal, const Vec1D &xV
     jassert(xHorizontal.size() == xVertical.size());
     const auto len = xHorizontal.size();
 
-    Vec1D result(len);
+    Vec1D result(len); // TODO Allocate beforehand
     // Perform element-wise division
     for (auto i = 0; i < len; i++) {
         result[i] = xVertical[i] / (xVertical[i] + xHorizontal[i] + std::numeric_limits<float>::epsilon());
@@ -99,23 +103,33 @@ void dsp::DecomposeSTN::process(const juce::AudioBuffer<float> &buffer,
         dataS[i] = bufferS[readPtr];
         dataT[i] = bufferT[readPtr];
         dataN[i] = bufferN[readPtr];
-        bufferS[readPtr] = bufferT[readPtr] = bufferN[readPtr] = bufferTN[readPtr] = 0.f;
+        bufferTNSmall[writePtr2++] = bufferTN[readPtr];
+        bufferTN[readPtr] = 0;
+        bufferS[readPtr] = bufferT[readPtr] = bufferN[readPtr] = 0.f;
         readPtr++;
         
         if(readPtr >= bufferS.size()) readPtr = 0;
+        if(writePtr2 >= bufferTNSmall.size()) writePtr2 = 0; // circular buffer
         
         newSamplesCount++;
         if(newSamplesCount >= hopSizeS){
-            decompose();
+            decompose_1(writePtr);
             newSamplesCount = 0;
         }
+        
+        newSamplesCount2++;
+        if(newSamplesCount2 >= hopSizeTN){
+            decompose_2(writePtr2);
+            newSamplesCount2 = 0;
+        }
+         
     }
 }
 
-void dsp::DecomposeSTN::decompose(){
+void dsp::DecomposeSTN::decompose_1(const int ptr){
     // Copy new samples to FFT vector
-    juce::FloatVectorOperations::copy(fft_1.data(), bufferInput.data() + writePtr, windowSizeS - writePtr);
-    juce::FloatVectorOperations::copy(fft_1.data() + (windowSizeS - writePtr), bufferInput.data(), writePtr);
+    juce::FloatVectorOperations::copy(fft_1.data(), bufferInput.data() + ptr, windowSizeS - ptr);
+    juce::FloatVectorOperations::copy(fft_1.data() + (windowSizeS - ptr), bufferInput.data(), ptr);
     
     // Round 1
     juce::FloatVectorOperations::multiply(fft_1.data(), windowS.data(), windowSizeS); // windowing
@@ -126,7 +140,7 @@ void dsp::DecomposeSTN::decompose(){
     fuzzySTN(S1, T1, N1, real_fft_1,
              threshold_s_1, threshold_s_2,
              medFilterHorizontalSizeS, medFilterVerticalSizeS,
-             horizontalS);
+             medianVerticalS, horizontalS);
     
     juce::FloatVectorOperations::multiply(S1.data(), real_fft_1.data(), windowSizeS); // Apply sines mask
     
@@ -144,59 +158,57 @@ void dsp::DecomposeSTN::decompose(){
     juce::FloatVectorOperations::multiply(fft_1.data(), windowS.data(), windowSizeS); // windowing
     juce::FloatVectorOperations::multiply(fft_1_tn.data(), windowS.data(), windowSizeS); // windowing
     
-    juce::FloatVectorOperations::multiply(fft_1.data(), 1.f/8.f, windowSizeS); // overlap add scaling
-    juce::FloatVectorOperations::add(bufferS.data() + readPtr, fft_1.data(), windowSizeS - readPtr); // add samples to circular buffer
-    juce::FloatVectorOperations::add(bufferS.data(), fft_1.data() + (windowSizeS - readPtr), readPtr); // add samples to circular buffer
+    juce::FloatVectorOperations::multiply(fft_1.data(), windowCorrection, windowSizeS); // overlap add scaling
+    juce::FloatVectorOperations::add(bufferS.data() + ptr, fft_1.data(), windowSizeS - ptr); // add samples to circular buffer
+    juce::FloatVectorOperations::add(bufferS.data(), fft_1.data() + (windowSizeS - ptr), ptr); // add samples to circular buffer
     
-    juce::FloatVectorOperations::multiply(fft_1_tn.data(), 1.f/8.f, windowSizeS); // overlap add scaling
-    juce::FloatVectorOperations::add(bufferTN.data() + readPtr, fft_1_tn.data(), windowSizeS - readPtr); // add samples to circular buffer
-    juce::FloatVectorOperations::add(bufferTN.data(), fft_1_tn.data() + (windowSizeS - readPtr), readPtr); // add samples to circular buffer
-    
-    // Round 2
-    for(auto i = 0; i < windowSizeS / windowSizeTN; i++)
-    {
-        // Copy new samples to FFT vector
-        const auto startIndex = (i * windowSizeTN + readPtr) % windowSizeS;
-        for (auto j = 0; j < windowSizeTN; j++) {
-            fft_2[j] = bufferTN[(startIndex + j) % windowSizeS];
-        }
-        
-        juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), windowSizeTN); // windowing
-        forwardFFTTN.performRealOnlyForwardTransform(fft_2.data());
-        
-        deinterleaveRealFFT(real_fft_2, fft_2, windowSizeTN); // deinterleaving for easiness of calcs
-        
-        fuzzySTN(S2, T2, N2, real_fft_2,
-                 threshold_tn_1, threshold_tn_2,
-                 medFilterHorizontalSizeTN, medFilterVerticalSizeTN,
-                 horizontalTN);
-        
-        juce::FloatVectorOperations::multiply(T2.data(), real_fft_2.data(), windowSizeTN); // Apply sines mask
-        
-        juce::FloatVectorOperations::add(N2.data(), S2.data(), windowSizeTN); // Add noise and sines masks
-        juce::FloatVectorOperations::multiply(N2.data(), real_fft_2.data(), windowSizeTN); // Apply summed mask
-        
-        // interleave the samples back
-        juce::FloatVectorOperations::copy(fft_2_ns.data(), fft_2.data(), fft_2.size());
-        interleaveRealFFT(fft_2, T2, windowSizeTN);
-        interleaveRealFFT(fft_2_ns, N2, windowSizeTN);
-        
-        inverseFFTT.performRealOnlyInverseTransform(fft_2.data()); // IFFT
-        inverseFFTN.performRealOnlyInverseTransform(fft_2_ns.data());
-
-        juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), windowSizeTN); // windowing
-        juce::FloatVectorOperations::multiply(fft_2_ns.data(), windowTN.data(), windowSizeTN); // windowing
-        
-        juce::FloatVectorOperations::multiply(fft_2.data(), 1.f/8.f, windowSizeTN); // overlap add scaling
-        juce::FloatVectorOperations::multiply(fft_2_ns.data(), 1.f/8.f, windowSizeTN); // overlap add scaling
-        
-        for (auto j = 0; j < windowSizeTN; j++) {
-            bufferT[(startIndex + j) % windowSizeS] += fft_2[j];
-            bufferN[(startIndex + j) % windowSizeS] += fft_2_ns[j];
-        }
-    }
+    juce::FloatVectorOperations::multiply(fft_1_tn.data(), windowCorrection, windowSizeS); // overlap add scaling
+    juce::FloatVectorOperations::add(bufferTN.data() + ptr, fft_1_tn.data(), windowSizeS - ptr); // add samples to circular buffer
+    juce::FloatVectorOperations::add(bufferTN.data(), fft_1_tn.data() + (windowSizeS - ptr), ptr); // add samples to circular buffer
 }
 
+void dsp::DecomposeSTN::decompose_2(const int ptr){
+    
+    // Round 2
+    // Copy new samples to FFT vector
+    juce::FloatVectorOperations::copy(fft_2.data(), bufferTNSmall.data() + ptr, windowSizeTN - ptr);
+    juce::FloatVectorOperations::copy(fft_2.data() + (windowSizeTN - ptr), bufferTNSmall.data(), ptr);
+
+    juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), windowSizeTN); // windowing
+    forwardFFTTN.performRealOnlyForwardTransform(fft_2.data());
+    
+    deinterleaveRealFFT(real_fft_2, fft_2, windowSizeTN); // deinterleaving for easiness of calcs
+    
+    fuzzySTN(S2, T2, N2, real_fft_2,
+             threshold_tn_1, threshold_tn_2,
+             medFilterHorizontalSizeTN, medFilterVerticalSizeTN,
+             medianVerticalTN, horizontalTN);
+
+    juce::FloatVectorOperations::multiply(T2.data(), real_fft_2.data(), windowSizeTN); // Apply sines mask
+
+    juce::FloatVectorOperations::add(N2.data(), S2.data(), windowSizeTN); // Add noise and sines masks
+    juce::FloatVectorOperations::multiply(N2.data(), real_fft_2.data(), windowSizeTN); // Apply summed mask
+    
+    // interleave the samples back
+    juce::FloatVectorOperations::copy(fft_2_ns.data(), fft_2.data(), fft_2.size());
+    interleaveRealFFT(fft_2, T2, windowSizeTN);
+    interleaveRealFFT(fft_2_ns, N2, windowSizeTN);
+    
+    inverseFFTT.performRealOnlyInverseTransform(fft_2.data()); // IFFT
+    inverseFFTN.performRealOnlyInverseTransform(fft_2_ns.data());
+
+    juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), windowSizeTN); // windowing
+    juce::FloatVectorOperations::multiply(fft_2_ns.data(), windowTN.data(), windowSizeTN); // windowing
+    
+    juce::FloatVectorOperations::multiply(fft_2.data(), windowCorrection, windowSizeTN); // overlap add scaling
+    juce::FloatVectorOperations::multiply(fft_2_ns.data(), windowCorrection, windowSizeTN); // overlap add scaling
+
+    for (auto j = 0; j < windowSizeTN; j++) {
+        bufferT[(readPtr + j) % windowSizeS] += fft_2[j];
+        bufferN[(readPtr + j) % windowSizeS] += fft_2_ns[j];
+    }
+
+}
 
 void dsp::DecomposeSTN::deinterleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples){
     jassert(src.size() >= numRealSamples * 2);
@@ -227,37 +239,37 @@ Vec1D dsp::DecomposeSTN::filterHorizonal(const Vec1D& x, std::deque<std::vector<
     filter.push_back(x);
     
     for (int h = 0; h < numSamples; ++h)
+    {
+        for (int i = 0; i < numChannels; ++i)
         {
-            for (int i = 0; i < numChannels; ++i)
-            {
-                median[i + pad] = filter[i][h]; // TODO use more optimal structure
-            }
-            // Extract the kernel directly from med_vec using indexing
-            juce::FloatVectorOperations::copy(kernel.data(),
-                                              median.data() + (numChannels - 1),
-                                              filterSize);
-            // Find the median element using nth_element
-            std::nth_element(kernel.begin(), kernel.begin() + pad, kernel.end());
-            medianHorizontal[h] = kernel[pad];
+            median[i + pad] = filter[i][h]; // TODO use more optimal structure
         }
+        // Extract the kernel directly from med_vec using indexing
+        juce::FloatVectorOperations::copy(kernel.data(),
+                                          median.data() + pad,
+                                          filterSize);
+        
+        // Find the median element using nth_element
+        std::nth_element(kernel.begin(), kernel.begin() + pad, kernel.end());
+        medianHorizontal[h] = kernel[pad];
+    }
 
     return medianHorizontal;
 }
 
-Vec1D dsp::DecomposeSTN::filterVertical(const Vec1D& x, const int filterSize){
+Vec1D dsp::DecomposeSTN::filterVertical(const Vec1D& x, Vec1D& filter, const int filterSize){
     const auto numSamples = x.size();
     Vec1D medianVertical(numSamples, 0.0f); // TODO allocate in adv
 
     const auto pad = filterSize / 2;
-    Vec1D median(numSamples + 2 * pad, 0.0f);  // TODO allocate in adv
     Vec1D kernel(filterSize, 0.0f);  // TODO allocate in adv
 
     for (auto h = 0; h < numSamples; h++)
     {
-        median[h + pad] = x[h];
+        filter[h + pad] = x[h];
 
         juce::FloatVectorOperations::copy(kernel.data(),
-                                          median.data() + h,
+                                          filter.data() + h,
                                           filterSize);
 
         // Find the median element using nth_element
@@ -276,12 +288,14 @@ void dsp::DecomposeSTN::prepare() {
     bufferT.resize(windowSizeS);
     bufferN.resize(windowSizeS);
     bufferTN.resize(windowSizeS);
-
+    bufferTNSmall.resize(windowSizeTN);
+    
     const auto pow2S = log2(windowSizeS);
     forwardFFT = juce::dsp::FFT(pow2S);
     inverseFFTS = juce::dsp::FFT(pow2S);
+    inverseFFTTN = juce::dsp::FFT(pow2S);
 
-    hopSizeS = windowSizeS / 8;
+    hopSizeS = windowSizeS / overlap;
     windowS.resize(windowSizeS);
     fft_1.resize(windowSizeS*2);
     fft_1_tn.resize(windowSizeS*2);
@@ -292,20 +306,22 @@ void dsp::DecomposeSTN::prepare() {
     
     juce::dsp::WindowingFunction<float>::fillWindowingTables(
         windowS.data(), windowSizeS,
-        juce::dsp::WindowingFunction<float>::WindowingMethod::hann);
+        juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
 
     medFilterHorizontalSizeS = std::div(static_cast<int>(filterLengthTime * processSpec->sampleRate), hopSizeS).quot;
     medFilterVerticalSizeS = std::div(static_cast<int>(filterLengthFreq * windowSizeS), static_cast<int>(processSpec->sampleRate)).quot;
 
+    medianVerticalS.resize(windowSizeS + medFilterVerticalSizeS);
     horizontalS.resize(medFilterHorizontalSizeS);
     for(auto& vec : horizontalS) vec.resize(windowSizeS);
+
     
     const auto pow2TN = log2(windowSizeTN);
     forwardFFTTN = juce::dsp::FFT(pow2TN);
     inverseFFTT = juce::dsp::FFT(pow2TN);
     inverseFFTN = juce::dsp::FFT(pow2TN);
 
-    hopSizeTN = windowSizeTN / 8;
+    hopSizeTN = windowSizeTN / overlap;
     windowTN.resize(windowSizeTN);
     fft_2.resize(windowSizeTN * 2);
     fft_2_ns.resize(windowSizeTN * 2);
@@ -316,11 +332,12 @@ void dsp::DecomposeSTN::prepare() {
 
     juce::dsp::WindowingFunction<float>::fillWindowingTables(
         windowTN.data(), windowSizeTN,
-        juce::dsp::WindowingFunction<float>::WindowingMethod::hann);
+        juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
     
     medFilterHorizontalSizeTN = std::div(static_cast<int>(filterLengthTime * processSpec->sampleRate), hopSizeTN).quot;
     medFilterVerticalSizeTN = std::div(static_cast<int>(filterLengthFreq * windowSizeTN), static_cast<int>(processSpec->sampleRate)).quot;
 
+    medianVerticalTN.resize(windowSizeTN + medFilterVerticalSizeTN);
     horizontalTN.resize(medFilterHorizontalSizeTN);
     for(auto& vec : horizontalTN) vec.resize(windowSizeTN);
 }
