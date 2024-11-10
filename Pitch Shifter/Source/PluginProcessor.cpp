@@ -6,7 +6,7 @@
   ==============================================================================
 */
 
-// TODO report latency for DAW
+// TODO change JUCE flags so we are using fast Apple's FFT
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
@@ -21,7 +21,9 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+    processSpec(std::make_shared<juce::dsp::ProcessSpec>()),
+    decomposeSTN(processSpec)
 #endif
 {
     addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
@@ -117,6 +119,19 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     for(auto& ab : outputBuffer){
         ab.resize(samplesPerBlock);
     }
+    
+    abS.setSize(channels, samplesPerBlock);
+    abT.setSize(channels, samplesPerBlock);
+    abN.setSize(channels, samplesPerBlock);
+    
+    if(processSpec->numChannels != channels || processSpec->maximumBlockSize != samplesPerBlock || processSpec->sampleRate != sampleRate){
+        processSpec->maximumBlockSize = samplesPerBlock;
+        processSpec->numChannels = channels;
+        processSpec->sampleRate = sampleRate;
+        
+        decomposeSTN.prepare();
+    }
+
 }
 
 void PitchShifterAudioProcessor::releaseResources()
@@ -169,16 +184,22 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     getParametersValues();
     
-    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
-        outputPointers[c] = outputBuffer[c].data();
-    }
+    decomposeSTN.process(buffer, abS, abT, abN);
+
+    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+    buffer.copyFrom(1, 0, abS, 0, 0, numSamples);
     
-    stretch.setTransposeFactor(pitchShift);
-    stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputPointers.data(), numSamples);
-    
-    for (int c = 0; c < channels; ++c) {
-        buffer.copyFrom(c, 0, outputPointers[c], numSamples);
-    }
+    // ===== Pitch Shifting by signal smith =====
+//    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
+//        outputPointers[c] = outputBuffer[c].data();
+//    }
+//    
+//    stretch.setTransposeFactor(pitchShift);
+//    stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputPointers.data(), numSamples);
+//    
+//    for (int c = 0; c < channels; ++c) {
+//        buffer.copyFrom(c, 0, outputPointers[c], numSamples);
+//    }
 }
 
 //==============================================================================

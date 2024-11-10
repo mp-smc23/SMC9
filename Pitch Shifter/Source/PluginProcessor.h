@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 //#include "External/shift-stretch.h"
 #include "External/signalsmith-stretch.h"
+#include "DSP/STN/decomposeSTN.h"
 
 //==============================================================================
 /**
@@ -72,7 +73,14 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     
     const double pitchBlockMs{50.};
     
+    std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
+    
     signalsmith::stretch::SignalsmithStretch<float> stretch;
+    dsp::DecomposeSTN decomposeSTN;
+    
+    juce::AudioBuffer<float> abS;
+    juce::AudioBuffer<float> abT;
+    juce::AudioBuffer<float> abN;
 
     std::vector<float *> outputPointers;
     std::vector<std::vector<float>> outputBuffer;

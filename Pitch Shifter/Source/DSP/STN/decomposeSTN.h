@@ -2,7 +2,6 @@
 #include <JuceHeader.h>
 
 using Vec2D = std::vector<std::vector<float>>;
-using Vec2DComplex = std::vector<std::vector<std::complex<float>>>;
 using Vec1D = std::vector<float>;
 
 namespace dsp {
@@ -14,38 +13,90 @@ class DecomposeSTN {
     void setWindowS(const int newWindowSizeS);
     void setWindowTN(const int newWindowSizeTN);
 
-    void process(juce::AudioBuffer<float> &buffer) const;
+    void process(const juce::AudioBuffer<float> &buffer,
+                 juce::AudioBuffer<float> &S, juce::AudioBuffer<float> &T,
+                 juce::AudioBuffer<float> &N);
     void prepare();
 
   private:
-    std::tuple<Vec1D, Vec1D, Vec1D> fuzzySTN(const Vec1D xReal,
-                                             const float threshold1,
-                                             const float threshold2,
-                                             const int medFilterHorizontalSize,
-                                             const int medFilterVerticalSize);
+    void decompose();
+    void fuzzySTN(Vec1D &S, Vec1D &T, Vec1D &N,
+                  const Vec1D &xReal, const float threshold1,
+                  const float threshold2, const int medFilterHorizontalSize,
+                  const int medFilterVerticalSize,
+                  std::deque<std::vector<float>> &filterHorizontal);
 
-    Vec1D filterHorizonal(const Vec1D x, const int filterSize);
-    Vec1D filterVertical(const Vec1D x, const int filterSize);
-    Vec1D transientness(const Vec1D& xHorizontal, const Vec1D& xVertical);
-    
+    Vec1D filterHorizonal(const Vec1D &x,
+                          std::deque<std::vector<float>> &filter,
+                          const int filterSize);
+    Vec1D filterVertical(const Vec1D &x, const int filterSize);
+    Vec1D transientness(const Vec1D &xHorizontal, const Vec1D &xVertical);
+
+    void deinterleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples);
+    void interleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples);
+
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
 
+    Vec1D bufferInput;
+    Vec1D bufferS;
+    Vec1D bufferT;
+    Vec1D bufferN;
+    Vec1D bufferTN;
+
+    Vec1D S1;
+    Vec1D T1;
+    Vec1D N1;
+
+    Vec1D S2;
+    Vec1D T2;
+    Vec1D N2;
+
+    int newSamplesCount{0};
+    int writePtr{0};
+    int readPtr{0};
+
+    // Round 1
     juce::dsp::FFT forwardFFT;   // forward S+T+N
     juce::dsp::FFT inverseFFTS;  // inverse S
+    juce::dsp::FFT inverseFFTTN; // inverse S
+
+    // Round 2
     juce::dsp::FFT forwardFFTTN; // forward T+N
     juce::dsp::FFT inverseFFTT;  // inverse T
     juce::dsp::FFT inverseFFTN;  // inverse N
 
-    std::vector<float> windowS;
-    std::vector<float> windowTN;
+    Vec1D fft_1;
+    Vec1D fft_1_tn;
+    Vec1D real_fft_1;
 
-    int windowSizeS{1024};
-    int windowSizeTN{1024};
+    Vec1D fft_2;
+    Vec1D fft_2_ns;
+    Vec1D real_fft_2;
+
+    Vec1D windowS;
+    Vec1D windowTN;
+
+    int windowSizeS{8192};
+    int windowSizeTN{512};
 
     int hopSizeS{windowSizeS / 8};
     int hopSizeTN{windowSizeTN / 8};
 
-    float filterLengthTime{0.2f};  // 200ms
-    float filterLengthFreq{500.f}; // 500Hz
+    const float filterLengthTime{0.2f};  // 200ms
+    const float filterLengthFreq{500.f}; // 500Hz
+
+    float medFilterHorizontalSizeS{1.f};
+    float medFilterVerticalSizeS{1.f};
+
+    float medFilterHorizontalSizeTN{1.f};
+    float medFilterVerticalSizeTN{1.f};
+
+    std::deque<std::vector<float>> horizontalS;
+    std::deque<std::vector<float>> horizontalTN;
+
+    const float threshold_s_1{0.7f};
+    const float threshold_s_2{0.8f};
+    const float threshold_tn_1{0.75f};
+    const float threshold_tn_2{0.85f};
 };
 } // namespace dsp
