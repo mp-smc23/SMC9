@@ -1,5 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
+#include "../Helpers/Interleave.h"
 
 using Vec2D = std::vector<std::vector<float>>;
 using Vec1D = std::vector<float>;
@@ -33,9 +34,6 @@ class DecomposeSTN {
                           const int filterSize);
     Vec1D filterVertical(const Vec1D &x, Vec1D& filter, const int filterSize);
     Vec1D transientness(const Vec1D &xHorizontal, const Vec1D &xVertical);
-
-    void deinterleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples);
-    void interleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples);
 
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
 

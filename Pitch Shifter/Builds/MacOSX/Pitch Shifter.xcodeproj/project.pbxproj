@@ -126,6 +126,7 @@
 		A5F57887A5A3C09466A717CB /* include_juce_audio_plugin_client_ARA.cpp */ /* include_juce_audio_plugin_client_ARA.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_audio_plugin_client_ARA.cpp; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_ARA.cpp; sourceTree = SOURCE_ROOT; };
 		A9047203232820500A6D4F90 /* include_juce_graphics_Sheenbidi.c */ /* include_juce_graphics_Sheenbidi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = include_juce_graphics_Sheenbidi.c; path = ../../JuceLibraryCode/include_juce_graphics_Sheenbidi.c; sourceTree = SOURCE_ROOT; };
 		A9D86C1C346B40EBB50A3FC1 /* include_juce_audio_basics.mm */ /* include_juce_audio_basics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_basics.mm; path = ../../JuceLibraryCode/include_juce_audio_basics.mm; sourceTree = SOURCE_ROOT; };
+		AA40A467DDB14388622BA113 /* Interleave.h */ /* Interleave.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Interleave.h; path = ../../Source/DSP/Helpers/Interleave.h; sourceTree = SOURCE_ROOT; };
 		AD7322023774CDBC0E8AC85F /* include_juce_graphics_Harfbuzz.cpp */ /* include_juce_graphics_Harfbuzz.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_graphics_Harfbuzz.cpp; path = ../../JuceLibraryCode/include_juce_graphics_Harfbuzz.cpp; sourceTree = SOURCE_ROOT; };
 		AE27C63CF27A1AB69896B13F /* PluginEditor.cpp */ /* PluginEditor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = PluginEditor.cpp; path = ../../Source/PluginEditor.cpp; sourceTree = SOURCE_ROOT; };
 		AF965B68869D64408F23B302 /* CoreMIDI.framework */ /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
@@ -289,6 +290,14 @@
 			name = STN;
 			sourceTree = "<group>";
 		};
+		3036CA9B1B1266C961335B0E /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				AA40A467DDB14388622BA113,
+			);
+			name = Helpers;
+			sourceTree = "<group>";
+		};
 		3B0EEA70DD76E9BAB65A0E8E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -380,6 +389,7 @@
 		8C301CA4CD869CF674D29764 /* DSP */ = {
 			isa = PBXGroup;
 			children = (
+				3036CA9B1B1266C961335B0E,
 				D1CC7EAEB9D0B8FC235405B4,
 				1D75EAEF288CB0B628D7FAD8,
 				2466F0E8B3356047221456E0,

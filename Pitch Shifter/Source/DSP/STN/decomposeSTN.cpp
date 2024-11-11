@@ -135,7 +135,7 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     juce::FloatVectorOperations::multiply(fft_1.data(), windowS.data(), windowSizeS); // windowing
     forwardFFT.performRealOnlyForwardTransform(fft_1.data()); // FFT
     
-    deinterleaveRealFFT(real_fft_1, fft_1, windowSizeS); // deinterleaving for easiness of calcs
+    helpers::deinterleaveRealFFT(real_fft_1, fft_1, windowSizeS); // deinterleaving for easiness of calcs
     
     fuzzySTN(S1, T1, N1, real_fft_1,
              threshold_s_1, threshold_s_2,
@@ -149,8 +149,8 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     
     // interleave the samples back
     juce::FloatVectorOperations::copy(fft_1_tn.data(), fft_1.data(), fft_1.size());
-    interleaveRealFFT(fft_1, S1, windowSizeS);
-    interleaveRealFFT(fft_1_tn, T1, windowSizeS);
+    helpers::interleaveRealFFT(fft_1, S1, windowSizeS);
+    helpers::interleaveRealFFT(fft_1_tn, T1, windowSizeS);
     
     inverseFFTS.performRealOnlyInverseTransform(fft_1.data()); // IFFT
     inverseFFTTN.performRealOnlyInverseTransform(fft_1_tn.data());
@@ -177,7 +177,7 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), windowSizeTN); // windowing
     forwardFFTTN.performRealOnlyForwardTransform(fft_2.data());
     
-    deinterleaveRealFFT(real_fft_2, fft_2, windowSizeTN); // deinterleaving for easiness of calcs
+    helpers::deinterleaveRealFFT(real_fft_2, fft_2, windowSizeTN); // deinterleaving for easiness of calcs
     
     fuzzySTN(S2, T2, N2, real_fft_2,
              threshold_tn_1, threshold_tn_2,
@@ -191,8 +191,8 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     
     // interleave the samples back
     juce::FloatVectorOperations::copy(fft_2_ns.data(), fft_2.data(), fft_2.size());
-    interleaveRealFFT(fft_2, T2, windowSizeTN);
-    interleaveRealFFT(fft_2_ns, N2, windowSizeTN);
+    helpers::interleaveRealFFT(fft_2, T2, windowSizeTN);
+    helpers::interleaveRealFFT(fft_2_ns, N2, windowSizeTN);
     
     inverseFFTT.performRealOnlyInverseTransform(fft_2.data()); // IFFT
     inverseFFTN.performRealOnlyInverseTransform(fft_2_ns.data());
@@ -210,21 +210,6 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
 
 }
 
-void dsp::DecomposeSTN::deinterleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples){
-    jassert(src.size() >= numRealSamples * 2);
-    jassert(dest.size() >= numRealSamples);
-    for(auto i = 0; i < numRealSamples; i++){
-        dest[i] = src[2 * i];
-    }
-}
-
-void dsp::DecomposeSTN::interleaveRealFFT(Vec1D &dest, const Vec1D &src, int numRealSamples){
-    jassert(dest.size() >= numRealSamples * 2);
-    jassert(src.size() >= numRealSamples);
-    for(auto i = 0; i < numRealSamples; i++){
-        dest[2*i] = src[i];
-    }
-}
 
 Vec1D dsp::DecomposeSTN::filterHorizonal(const Vec1D& x, std::deque<std::vector<float>>& filter, const int filterSize){
     const auto numChannels = filter.size();

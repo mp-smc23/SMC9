@@ -6,6 +6,9 @@
   <MAINGROUP id="hvmnEB" name="Pitch Shifter">
     <GROUP id="{EF5953AD-22A1-C5A4-9A33-261E2A864F32}" name="Source">
       <GROUP id="{A388F90C-D776-B383-6A94-8AC8C6CD7105}" name="DSP">
+        <GROUP id="{69CE35CA-77C8-BFBD-F323-EEA902BFDC01}" name="Helpers">
+          <FILE id="MVJqaf" name="Interleave.h" compile="0" resource="0" file="Source/DSP/Helpers/Interleave.h"/>
+        </GROUP>
         <GROUP id="{9C3B68F5-6C43-D588-37CC-BA4D7F8C4A4D}" name="Resampling">
           <FILE id="MkAqt8" name="Resample.cpp" compile="1" resource="0" file="Source/DSP/Resampling/Resample.cpp"/>
           <FILE id="PQYjnV" name="Resample.h" compile="0" resource="0" file="Source/DSP/Resampling/Resample.h"/>
