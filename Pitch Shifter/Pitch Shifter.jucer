@@ -5,6 +5,27 @@
               pluginVSTCategory="kPlugCategEffect" pluginVST3Category="Fx,Pitch Shift">
   <MAINGROUP id="hvmnEB" name="Pitch Shifter">
     <GROUP id="{EF5953AD-22A1-C5A4-9A33-261E2A864F32}" name="Source">
+      <GROUP id="{0E079559-74A0-6840-2B6D-1E0154C45799}" name="Services">
+        <FILE id="ddaXtf" name="atomicops.h" compile="0" resource="0" file="Source/Services/atomicops.h"/>
+        <FILE id="ceyByG" name="readerwritercircularbuffer.h" compile="0" resource="0"
+              file="Source/Services/readerwritercircularbuffer.h"/>
+        <FILE id="yju0Ro" name="WaveformBufferQueueService.cpp" compile="1"
+              resource="0" file="Source/Services/WaveformBufferQueueService.cpp"/>
+        <FILE id="uFHhrH" name="WaveformBufferQueueService.h" compile="0" resource="0"
+              file="Source/Services/WaveformBufferQueueService.h"/>
+      </GROUP>
+      <GROUP id="{D87E5F8E-5920-5D2B-9EFC-EB42E98551C1}" name="Components">
+        <FILE id="ehzsVY" name="AudioVisualizer.cpp" compile="1" resource="0"
+              file="Source/Components/AudioVisualizer.cpp"/>
+        <FILE id="ClSyW1" name="AudioVisualizer.h" compile="0" resource="0"
+              file="Source/Components/AudioVisualizer.h"/>
+        <FILE id="ktTJ0b" name="ChannelInfo.h" compile="0" resource="0" file="Source/Components/ChannelInfo.h"/>
+        <FILE id="DN29Fg" name="WaveformGraph.cpp" compile="1" resource="0"
+              file="Source/Components/WaveformGraph.cpp"/>
+        <FILE id="Xk0k8H" name="WaveformGraph.h" compile="0" resource="0" file="Source/Components/WaveformGraph.h"/>
+        <FILE id="iq8f8z" name="WaveformGraphEvents.h" compile="0" resource="0"
+              file="Source/Components/WaveformGraphEvents.h"/>
+      </GROUP>
       <GROUP id="{A388F90C-D776-B383-6A94-8AC8C6CD7105}" name="DSP">
         <GROUP id="{0485EFCD-1696-4DAD-4813-8B68A6827CAE}" name="MedianFilter">
           <FILE id="IX2G30" name="MedianFilterBase.h" compile="0" resource="0"
@@ -71,7 +92,7 @@
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="Pitch Shifter" headerPath="../../../libs&#10;"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="Pitch Shifter" headerPath="../../../libs&#10;../&#10;"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Pitch Shifter" headerPath="../../../libs&#10;"/>
       </CONFIGURATIONS>
       <MODULEPATHS>

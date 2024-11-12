@@ -6,35 +6,35 @@
   ==============================================================================
 */
 
-#include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "PluginProcessor.h"
 
 //==============================================================================
-PitchShifterAudioProcessorEditor::PitchShifterAudioProcessorEditor (PitchShifterAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
-{
+PitchShifterAudioProcessorEditor::PitchShifterAudioProcessorEditor(PitchShifterAudioProcessor &p)
+    : AudioProcessorEditor(&p), audioProcessor(p), waveformS(p.waveformBufferServiceS),
+      waveformT(p.waveformBufferServiceT), waveformN(p.waveformBufferServiceN) {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize(800, 500);
 }
 
-PitchShifterAudioProcessorEditor::~PitchShifterAudioProcessorEditor()
-{
-}
+PitchShifterAudioProcessorEditor::~PitchShifterAudioProcessorEditor() {}
 
 //==============================================================================
-void PitchShifterAudioProcessorEditor::paint (juce::Graphics& g)
-{
+void PitchShifterAudioProcessorEditor::paint(juce::Graphics &g) {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    // these define the parameters of our slider object
+    // this function adds the slider to the editor
 
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (15.0f));
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    addAndMakeVisible(&waveformS);
+    addAndMakeVisible(&waveformT);
+    addAndMakeVisible(&waveformN);
 }
 
-void PitchShifterAudioProcessorEditor::resized()
-{
+void PitchShifterAudioProcessorEditor::resized() {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+    waveformS.setBounds(50, 50, 700, 100);
+    waveformT.setBounds(50, 200, 700, 100);
+    waveformN.setBounds(50, 350, 700, 100);
 }

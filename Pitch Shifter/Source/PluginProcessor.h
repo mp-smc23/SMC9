@@ -12,6 +12,7 @@
 //#include "External/shift-stretch.h"
 #include "External/signalsmith-stretch.h"
 #include "DSP/STN/decomposeSTN.h"
+#include "Services/WaveformBufferQueueService.h"
 
 //==============================================================================
 /**
@@ -55,6 +56,10 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceS;
+    std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceT;
+    std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceN;
     
     private:
     //==============================================================================

@@ -24,6 +24,9 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     decomposeSTN(processSpec)
 #endif
 {
+    waveformBufferServiceS = std::make_shared<services::WaveformBufferQueueService>();
+    waveformBufferServiceT = std::make_shared<services::WaveformBufferQueueService>();
+    waveformBufferServiceN = std::make_shared<services::WaveformBufferQueueService>();
     addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
 //    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
 }
@@ -184,8 +187,11 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     decomposeSTN.process(buffer, abS, abT, abN);
     
-    buffer.copyFrom(0, 0, abN, 0, 0, numSamples);
-    buffer.copyFrom(1, 0, abN, 0, 0, numSamples);
+    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
+    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
+    
+    buffer.clear(1, 0, numSamples);
     
     // ===== Pitch Shifting by signal smith =====
 //    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
@@ -198,6 +204,10 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 //    for (int c = 0; c < channels; ++c) {
 //        buffer.copyFrom(c, 0, outputPointers[c], numSamples);
 //    }
+    
+    waveformBufferServiceS->insertBuffers(abS);
+    waveformBufferServiceN->insertBuffers(abN);
+    waveformBufferServiceT->insertBuffers(abT);
 }
 
 //==============================================================================
