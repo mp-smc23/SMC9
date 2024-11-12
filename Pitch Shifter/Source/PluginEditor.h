@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "Components/WaveformGraph.h"
+#include "Components/SpectrumGraph.h"
 
 //==============================================================================
 /**
@@ -32,6 +33,11 @@ private:
     components::WaveformGraph waveformS;
     components::WaveformGraph waveformT;
     components::WaveformGraph waveformN;
+    
+    components::SpectrumGraph spectrumS;
+    components::SpectrumGraph spectrumT;
+    components::SpectrumGraph spectrumN;
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PitchShifterAudioProcessorEditor)
 };

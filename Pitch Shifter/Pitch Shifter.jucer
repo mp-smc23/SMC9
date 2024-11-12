@@ -9,6 +9,10 @@
         <FILE id="ddaXtf" name="atomicops.h" compile="0" resource="0" file="Source/Services/atomicops.h"/>
         <FILE id="ceyByG" name="readerwritercircularbuffer.h" compile="0" resource="0"
               file="Source/Services/readerwritercircularbuffer.h"/>
+        <FILE id="mBPS0T" name="SpectrumBufferQueueService.cpp" compile="1"
+              resource="0" file="Source/Services/SpectrumBufferQueueService.cpp"/>
+        <FILE id="SknWlD" name="SpectrumBufferQueueService.h" compile="0" resource="0"
+              file="Source/Services/SpectrumBufferQueueService.h"/>
         <FILE id="yju0Ro" name="WaveformBufferQueueService.cpp" compile="1"
               resource="0" file="Source/Services/WaveformBufferQueueService.cpp"/>
         <FILE id="uFHhrH" name="WaveformBufferQueueService.h" compile="0" resource="0"
@@ -20,11 +24,12 @@
         <FILE id="ClSyW1" name="AudioVisualizer.h" compile="0" resource="0"
               file="Source/Components/AudioVisualizer.h"/>
         <FILE id="ktTJ0b" name="ChannelInfo.h" compile="0" resource="0" file="Source/Components/ChannelInfo.h"/>
+        <FILE id="HKiDT9" name="SpectrumGraph.cpp" compile="1" resource="0"
+              file="Source/Components/SpectrumGraph.cpp"/>
+        <FILE id="riiia3" name="SpectrumGraph.h" compile="0" resource="0" file="Source/Components/SpectrumGraph.h"/>
         <FILE id="DN29Fg" name="WaveformGraph.cpp" compile="1" resource="0"
               file="Source/Components/WaveformGraph.cpp"/>
         <FILE id="Xk0k8H" name="WaveformGraph.h" compile="0" resource="0" file="Source/Components/WaveformGraph.h"/>
-        <FILE id="iq8f8z" name="WaveformGraphEvents.h" compile="0" resource="0"
-              file="Source/Components/WaveformGraphEvents.h"/>
       </GROUP>
       <GROUP id="{A388F90C-D776-B383-6A94-8AC8C6CD7105}" name="DSP">
         <GROUP id="{0485EFCD-1696-4DAD-4813-8B68A6827CAE}" name="MedianFilter">

@@ -13,6 +13,7 @@
 #include "External/signalsmith-stretch.h"
 #include "DSP/STN/decomposeSTN.h"
 #include "Services/WaveformBufferQueueService.h"
+#include "Services/SpectrumBufferQueueService.h"
 
 //==============================================================================
 /**
@@ -60,6 +61,11 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceS;
     std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceT;
     std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceN;
+    
+    std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceS;
+    std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceT;
+    std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceN;
+    
     
     private:
     //==============================================================================

@@ -25,12 +25,6 @@ std::shared_ptr<components::AudioVisualizer> components::WaveformGraph::waveform
     return waveform;
 }
 
-
-juce::Rectangle<int> components::WaveformGraph::getCurrentScreenBounds()
-{
-    return getScreenBounds();
-}
-
 void components::WaveformGraph::paint(juce::Graphics& g)
 {
     const auto r = getLocalBounds().toFloat();

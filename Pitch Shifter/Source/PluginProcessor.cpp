@@ -27,6 +27,11 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     waveformBufferServiceS = std::make_shared<services::WaveformBufferQueueService>();
     waveformBufferServiceT = std::make_shared<services::WaveformBufferQueueService>();
     waveformBufferServiceN = std::make_shared<services::WaveformBufferQueueService>();
+    
+    spectrumBufferServiceS = std::make_shared<services::SpectrumBufferQueueService>();
+    spectrumBufferServiceT = std::make_shared<services::SpectrumBufferQueueService>();
+    spectrumBufferServiceN = std::make_shared<services::SpectrumBufferQueueService>();
+    
     addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
 //    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
 }
@@ -206,8 +211,13 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 //    }
     
     waveformBufferServiceS->insertBuffers(abS);
-    waveformBufferServiceN->insertBuffers(abN);
     waveformBufferServiceT->insertBuffers(abT);
+    waveformBufferServiceN->insertBuffers(abN);
+    
+    spectrumBufferServiceS->insertBuffers(abS);
+    spectrumBufferServiceT->insertBuffers(abT);
+    spectrumBufferServiceN->insertBuffers(abN);
+
 }
 
 //==============================================================================

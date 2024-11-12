@@ -2,19 +2,15 @@
 #include <JuceHeader.h>
 #include "AudioVisualizer.h"
 #include "../Services/WaveformBufferQueueService.h"
-#include "WaveformGraphEvents.h"
-//#include "Helpers/GUI.h"
 
 namespace components
 {
-    class WaveformGraph final : public juce::Component, public events::WaveformGraphEvents, private juce::Timer
+    class WaveformGraph final : public juce::Component, private juce::Timer
     {
     public:
         WaveformGraph(std::shared_ptr<services::WaveformBufferQueueService> waveformBufferQueueService);
         ~WaveformGraph() override;
         [[nodiscard]] std::shared_ptr<AudioVisualizer> getWaveform() const { return waveform; }
-
-        juce::Rectangle<int> getCurrentScreenBounds() override;
 
         void setRepaintRate(int frequencyInHz);
         void paint(juce::Graphics& g) override;
