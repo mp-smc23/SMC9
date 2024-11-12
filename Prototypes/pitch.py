@@ -16,7 +16,7 @@ audio_file = "Soft Spot"
 # Load audio file using librosa 
 audio, fs = librosa.load(f"../Evaluation/Audio/{audio_file}.aif", sr=None)
 
-nWin1 = 8192 # samples
+nWin1 = 2048 # samples
 nWin2 = 512 # samples
 
 # Trim audio to be a multiple of nWin1 (for easiness of STFT calculations)
@@ -38,6 +38,20 @@ tsm_ratio = 1 / pitch_shift_ratio
 print("========================")
 print("Pitch Shift Semitones:", pitch_shift_semitones)
 print("Pitch Shift Ratio:", pitch_shift_ratio)
+
+ploting.plotSTN(x=audio, xs=xs, xt=xt, xn=xn, sr=fs)
+
+
+input('Press Enter to play the sines...')
+sd.play(xs, fs)
+
+input('Press Enter to play the transients...')
+sd.play(xt, fs)
+
+input('Press Enter to play the noise...')
+sd.play(xn, fs)
+
+input('Press Enter to continue')
 
 
 # Sinusoids - pitch shifting
@@ -63,6 +77,13 @@ if config.visualize:
 
 # Transients - unprocessed
 xt_shifted = xt
+if config.visualize:
+    plt.figure(figsize=(10, 10))
+    plt.subplot(2,1,1)
+    ploting.plotAudio(xt, fs, 'Transients')
+    plt.subplot(2,1,2)
+    ploting.plotSpectogram(xt, fs, 'Transients Spectrum')
+    plt.show()
 
 output = xs_shifted + xt_shifted + xn_shifted
 

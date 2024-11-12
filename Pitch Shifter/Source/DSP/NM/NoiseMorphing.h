@@ -33,6 +33,7 @@ class NoiseMorphing {
     juce::dsp::FFT inverseFFT;
     Vec1D window;
 
+    Vec1D input;
     Vec1D bufferOutput;
     Vec1D fft;
     Vec1D fftAbs;

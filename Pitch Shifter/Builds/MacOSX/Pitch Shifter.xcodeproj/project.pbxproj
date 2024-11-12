@@ -92,6 +92,7 @@
 		1A3AA851193E116B1424ECB1 /* JuceHeader.h */ /* JuceHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JuceHeader.h; path = ../../JuceLibraryCode/JuceHeader.h; sourceTree = SOURCE_ROOT; };
 		1AAD1163B19EE4226C7C670E /* VST3 Manifest Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = juce_vst3_helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		1BD90E2882ECAC1E42F000BA /* juce_graphics */ /* juce_graphics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_graphics; path = ../../../../../../JUCE/modules/juce_graphics; sourceTree = SOURCE_ROOT; };
+		2088E60283F7CA85EEAFD8D6 /* MedianFilterBase.h */ /* MedianFilterBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MedianFilterBase.h; path = ../../Source/DSP/MedianFilter/MedianFilterBase.h; sourceTree = SOURCE_ROOT; };
 		24BCE3FDB464B3CED7DF3AD0 /* Info-Standalone_Plugin.plist */ /* Info-Standalone_Plugin.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-Standalone_Plugin.plist"; path = "Info-Standalone_Plugin.plist"; sourceTree = SOURCE_ROOT; };
 		2A4DAE3D42BB63FED18481E8 /* juce_data_structures */ /* juce_data_structures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_data_structures; path = ../../../../../../JUCE/modules/juce_data_structures; sourceTree = SOURCE_ROOT; };
 		2F368360D9AB028D059290A5 /* juce_audio_basics */ /* juce_audio_basics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_basics; path = ../../../../../../JUCE/modules/juce_audio_basics; sourceTree = SOURCE_ROOT; };
@@ -112,6 +113,7 @@
 		6F5C3CE45B18580415F53F45 /* WebKit.framework */ /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		7312542AF38375800F890BC3 /* include_juce_events.mm */ /* include_juce_events.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_events.mm; path = ../../JuceLibraryCode/include_juce_events.mm; sourceTree = SOURCE_ROOT; };
 		76D0D3CA48A6D749351A5C31 /* PluginProcessor.cpp */ /* PluginProcessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = PluginProcessor.cpp; path = ../../Source/PluginProcessor.cpp; sourceTree = SOURCE_ROOT; };
+		7C532D550D3A8DB6620B3C91 /* HorizontalMedianFilter.h */ /* HorizontalMedianFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HorizontalMedianFilter.h; path = ../../Source/DSP/MedianFilter/Horizontal/HorizontalMedianFilter.h; sourceTree = SOURCE_ROOT; };
 		7F37428B06BC927C85460ABB /* VST3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Pitch Shifter.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FDD16F6111C97F1EB39B8AA /* include_juce_audio_plugin_client_Standalone.cpp */ /* include_juce_audio_plugin_client_Standalone.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_audio_plugin_client_Standalone.cpp; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_Standalone.cpp; sourceTree = SOURCE_ROOT; };
 		8229BE303272275A5335BC91 /* Cocoa.framework */ /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -121,6 +123,7 @@
 		8AAF595C6C519500535E0E95 /* PluginProcessor.h */ /* PluginProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PluginProcessor.h; path = ../../Source/PluginProcessor.h; sourceTree = SOURCE_ROOT; };
 		8ACC222F408D955954D1C741 /* shift-stretch.h */ /* shift-stretch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "shift-stretch.h"; path = "../../Source/External/shift-stretch.h"; sourceTree = SOURCE_ROOT; };
 		8F9E3FA900A9C74F4DE277D2 /* decomposeSTN.cpp */ /* decomposeSTN.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = decomposeSTN.cpp; path = ../../Source/DSP/STN/decomposeSTN.cpp; sourceTree = SOURCE_ROOT; };
+		969A58DD859817A2ECB9C4EC /* VerticalMedianFilter.h */ /* VerticalMedianFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VerticalMedianFilter.h; path = ../../Source/DSP/MedianFilter/Vertical/VerticalMedianFilter.h; sourceTree = SOURCE_ROOT; };
 		9ACFD27C11A118D11D66ED23 /* juce_audio_plugin_client */ /* juce_audio_plugin_client */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_plugin_client; path = ../../../../../../JUCE/modules/juce_audio_plugin_client; sourceTree = SOURCE_ROOT; };
 		A33E6299D25D226C0DA25004 /* include_juce_audio_plugin_client_AU_1.mm */ /* include_juce_audio_plugin_client_AU_1.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_plugin_client_AU_1.mm; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_AU_1.mm; sourceTree = SOURCE_ROOT; };
 		A5F57887A5A3C09466A717CB /* include_juce_audio_plugin_client_ARA.cpp */ /* include_juce_audio_plugin_client_ARA.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_audio_plugin_client_ARA.cpp; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_ARA.cpp; sourceTree = SOURCE_ROOT; };
@@ -259,6 +262,14 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		039894AF1B42784AF7FFF6E5 /* Vertical */ = {
+			isa = PBXGroup;
+			children = (
+				969A58DD859817A2ECB9C4EC,
+			);
+			name = Vertical;
+			sourceTree = "<group>";
+		};
 		1059EA80F3D263792E21BC71 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -373,6 +384,16 @@
 			name = "JUCE Modules";
 			sourceTree = "<group>";
 		};
+		78FCE5C9D6FAFFDE013F639C /* MedianFilter */ = {
+			isa = PBXGroup;
+			children = (
+				2088E60283F7CA85EEAFD8D6,
+				039894AF1B42784AF7FFF6E5,
+				AADA5C62F395FCCBE04A740C,
+			);
+			name = MedianFilter;
+			sourceTree = "<group>";
+		};
 		80916E7662471D671FD9DDBB /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -389,6 +410,7 @@
 		8C301CA4CD869CF674D29764 /* DSP */ = {
 			isa = PBXGroup;
 			children = (
+				78FCE5C9D6FAFFDE013F639C,
 				3036CA9B1B1266C961335B0E,
 				D1CC7EAEB9D0B8FC235405B4,
 				1D75EAEF288CB0B628D7FAD8,
@@ -403,6 +425,14 @@
 				80916E7662471D671FD9DDBB,
 			);
 			name = "Pitch Shifter";
+			sourceTree = "<group>";
+		};
+		AADA5C62F395FCCBE04A740C /* Horizontal */ = {
+			isa = PBXGroup;
+			children = (
+				7C532D550D3A8DB6620B3C91,
+			);
+			name = Horizontal;
 			sourceTree = "<group>";
 		};
 		ADD90EAF8336B35607B6AFBA /* Products */ = {

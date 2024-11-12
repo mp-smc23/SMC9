@@ -1,11 +1,26 @@
 #pragma once
 #include <JuceHeader.h>
 #include "../Helpers/Interleave.h"
+#include "../MedianFilter/Vertical/VerticalMedianFilter.h"
+#include "../MedianFilter/Horizontal/HorizontalMedianFilter.h"
 
 using Vec2D = std::vector<std::vector<float>>;
 using Vec1D = std::vector<float>;
 
 namespace dsp {
+
+    struct STN{
+        Vec1D S;
+        Vec1D T;
+        Vec1D N;
+        
+        void resize(const size_t newSize){
+            S.resize(newSize, 0.f);
+            T.resize(newSize, 0.f);
+            N.resize(newSize, 0.f);
+        }
+    };
+    
 class DecomposeSTN {
   public:
     DecomposeSTN(std::shared_ptr<juce::dsp::ProcessSpec> procSpec);
@@ -22,18 +37,12 @@ class DecomposeSTN {
   private:
     void decompose_1(const int ptr);
     void decompose_2(const int ptr);
-    void fuzzySTN(Vec1D &S, Vec1D &T, Vec1D &N,
-                  const Vec1D &xReal, const float threshold1,
-                  const float threshold2, const int medFilterHorizontalSize,
-                  const int medFilterVerticalSize,
-                  Vec1D& filterV,
-                  std::deque<std::vector<float>> &filterH);
+    void fuzzySTN(STN& stn, const Vec1D &xReal, Vec1D& rt,
+                  const float G1, const float G2,
+                  medianfilter::HorizontalMedianFilter& filterH,
+                  medianfilter::VerticalMedianFilter& filterV);
 
-    Vec1D filterHorizonal(const Vec1D &x,
-                          std::deque<std::vector<float>> &filter,
-                          const int filterSize);
-    Vec1D filterVertical(const Vec1D &x, Vec1D& filter, const int filterSize);
-    Vec1D transientness(const Vec1D &xHorizontal, const Vec1D &xVertical);
+    void transientness(Vec1D& dest, const Vec1D &xHorizontal, const Vec1D &xVertical);
 
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
 
@@ -44,13 +53,8 @@ class DecomposeSTN {
     Vec1D bufferTN;
     Vec1D bufferTNSmall;
 
-    Vec1D S1;
-    Vec1D T1;
-    Vec1D N1;
-
-    Vec1D S2;
-    Vec1D T2;
-    Vec1D N2;
+    STN stn1;
+    STN stn2;
 
     int newSamplesCount{0};
     int writePtr{0};
@@ -76,32 +80,29 @@ class DecomposeSTN {
     Vec1D fft_2;
     Vec1D fft_2_ns;
     Vec1D real_fft_2;
+    
+    Vec1D rtS;
+    Vec1D rtTN;
 
     Vec1D windowS;
     Vec1D windowTN;
 
-    int windowSizeS{8192};
-    int windowSizeTN{512};
+    int fftSizeS{2048};
+    int fftSizeTN{512};
 
     const int overlap{8};
     
-    int hopSizeS{windowSizeS / overlap};
-    int hopSizeTN{windowSizeTN / overlap};
+    int hopSizeS{fftSizeS / overlap};
+    int hopSizeTN{fftSizeTN / overlap};
 
-    const float filterLengthTime{0.2f};  // 200ms
+    const float filterLengthTime{0.05f};  // 50ms
     const float filterLengthFreq{500.f}; // 500Hz
-
-    float medFilterHorizontalSizeS{1.f};
-    float medFilterVerticalSizeS{1.f};
-        
-    float medFilterHorizontalSizeTN{1.f};
-    float medFilterVerticalSizeTN{1.f};
-
-    Vec1D medianVerticalS;
-    Vec1D medianVerticalTN;
     
-    std::deque<std::vector<float>> horizontalS;
-    std::deque<std::vector<float>> horizontalTN;
+    medianfilter::HorizontalMedianFilter medianFilterHorS;
+    medianfilter::HorizontalMedianFilter medianFilterHorTN;
+    
+    medianfilter::VerticalMedianFilter medianFilterVerS;
+    medianfilter::VerticalMedianFilter medianFilterVerTN;
 
     const float threshold_s_1{0.8f};
     const float threshold_s_2{0.7f};

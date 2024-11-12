@@ -6,6 +6,18 @@
   <MAINGROUP id="hvmnEB" name="Pitch Shifter">
     <GROUP id="{EF5953AD-22A1-C5A4-9A33-261E2A864F32}" name="Source">
       <GROUP id="{A388F90C-D776-B383-6A94-8AC8C6CD7105}" name="DSP">
+        <GROUP id="{0485EFCD-1696-4DAD-4813-8B68A6827CAE}" name="MedianFilter">
+          <FILE id="IX2G30" name="MedianFilterBase.h" compile="0" resource="0"
+                file="Source/DSP/MedianFilter/MedianFilterBase.h"/>
+          <GROUP id="{CBC1566F-4B10-A1CF-8E15-5F823E9334F1}" name="Vertical">
+            <FILE id="JzoWQZ" name="VerticalMedianFilter.h" compile="0" resource="0"
+                  file="Source/DSP/MedianFilter/Vertical/VerticalMedianFilter.h"/>
+          </GROUP>
+          <GROUP id="{764E637E-163B-0FE5-E6C8-AF798366A73D}" name="Horizontal">
+            <FILE id="rlgzMR" name="HorizontalMedianFilter.h" compile="0" resource="0"
+                  file="Source/DSP/MedianFilter/Horizontal/HorizontalMedianFilter.h"/>
+          </GROUP>
+        </GROUP>
         <GROUP id="{69CE35CA-77C8-BFBD-F323-EEA902BFDC01}" name="Helpers">
           <FILE id="MVJqaf" name="Interleave.h" compile="0" resource="0" file="Source/DSP/Helpers/Interleave.h"/>
         </GROUP>

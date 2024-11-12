@@ -20,21 +20,27 @@ void dsp::NoiseMorphing::process(juce::AudioBuffer<float> &buffer) {
     const auto data = buffer.getWritePointer(0);
 
     for (auto i = 0; i < numSamples; i++) {
-        fft[writePtr++] = data[i];
+        input[writePtr++] = data[i];
+        if(writePtr >= input.size()) writePtr = 0;
 
         data[i] = bufferOutput[readPtr];
         bufferOutput[readPtr] = 0.f;
         if (++readPtr >= bufferOutput.size())
             readPtr = 0;
 
-        if (writePtr >= hopSize) {
+        newSamplesCount++;
+        if (newSamplesCount >= hopSize) {
             processFrame();
-            writePtr = 0;
+            newSamplesCount = 0;
         }
     }
 }
 
 void dsp::NoiseMorphing::processFrame() {
+    // Copy new samples to FFT vector
+    juce::FloatVectorOperations::copy(fft.data(), input.data() + writePtr, fftSize - writePtr);
+    juce::FloatVectorOperations::copy(fft.data() + (fftSize - writePtr), input.data(), writePtr);
+    
     juce::FloatVectorOperations::multiply(fft.data(), window.data(), fftSize); // windowing
     forwardFFT.performRealOnlyForwardTransform(fft.data());                    // FFT
 

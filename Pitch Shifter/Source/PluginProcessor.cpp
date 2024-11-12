@@ -104,7 +104,7 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     const auto hopSizeSamples = static_cast<int>(blockSamples / 4);
     stretch.configure(channels, blockSamples, hopSizeSamples);
     
-    setLatencySamples(stretch.inputLatency() + stretch.outputLatency());
+    setLatencySamples(2048+512);
 
     // query the current configuration
     DBG("Block Samples: " << stretch.blockSamples());
@@ -183,12 +183,9 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     getParametersValues();
     
     decomposeSTN.process(buffer, abS, abT, abN);
-
-    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
     
-    buffer.addFrom(1, 0, abN, 0, 0, numSamples);
+    buffer.copyFrom(0, 0, abN, 0, 0, numSamples);
+    buffer.copyFrom(1, 0, abN, 0, 0, numSamples);
     
     // ===== Pitch Shifting by signal smith =====
 //    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
