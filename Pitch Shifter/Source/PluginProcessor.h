@@ -61,6 +61,7 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceS;
     std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceT;
     std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceN;
+    std::shared_ptr<services::WaveformBufferQueueService> waveformBufferServiceOut;
     
     std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceS;
     std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceT;
@@ -92,7 +93,7 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     juce::AudioBuffer<float> abS;
     juce::AudioBuffer<float> abT;
     juce::AudioBuffer<float> abN;
-
+    
     std::vector<float *> outputPointers;
     std::vector<std::vector<float>> outputBuffer;
     

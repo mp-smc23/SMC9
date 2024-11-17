@@ -33,6 +33,7 @@ private:
     components::WaveformGraph waveformS;
     components::WaveformGraph waveformT;
     components::WaveformGraph waveformN;
+    components::WaveformGraph waveformOut;
     
     components::SpectrumGraph spectrumS;
     components::SpectrumGraph spectrumT;

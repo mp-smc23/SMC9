@@ -27,6 +27,7 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     waveformBufferServiceS = std::make_shared<services::WaveformBufferQueueService>();
     waveformBufferServiceT = std::make_shared<services::WaveformBufferQueueService>();
     waveformBufferServiceN = std::make_shared<services::WaveformBufferQueueService>();
+    waveformBufferServiceOut = std::make_shared<services::WaveformBufferQueueService>();
     
     spectrumBufferServiceS = std::make_shared<services::SpectrumBufferQueueService>();
     spectrumBufferServiceT = std::make_shared<services::SpectrumBufferQueueService>();
@@ -189,14 +190,12 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const auto numSamples = buffer.getNumSamples();
     
     getParametersValues();
-    
+      
     decomposeSTN.process(buffer, abS, abT, abN);
     
     buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
     buffer.addFrom(0, 0, abT, 0, 0, numSamples);
     buffer.addFrom(0, 0, abN, 0, 0, numSamples);
-    
-    buffer.clear(1, 0, numSamples);
     
     // ===== Pitch Shifting by signal smith =====
 //    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
@@ -213,11 +212,12 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     waveformBufferServiceS->insertBuffers(abS);
     waveformBufferServiceT->insertBuffers(abT);
     waveformBufferServiceN->insertBuffers(abN);
-    
-    spectrumBufferServiceS->insertBuffers(abS);
-    spectrumBufferServiceT->insertBuffers(abT);
-    spectrumBufferServiceN->insertBuffers(abN);
+    waveformBufferServiceOut->insertBuffers(buffer);
 
+    
+//    spectrumBufferServiceS->insertBuffers(abS);
+//    spectrumBufferServiceT->insertBuffers(abT);
+//    spectrumBufferServiceN->insertBuffers(abN);
 }
 
 //==============================================================================

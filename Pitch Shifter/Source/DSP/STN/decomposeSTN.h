@@ -37,7 +37,7 @@ class DecomposeSTN {
   private:
     void decompose_1(const int ptr);
     void decompose_2(const int ptr);
-    void fuzzySTN(STN& stn, const Vec1D &xReal, Vec1D& rt,
+    void fuzzySTN(STN& stn, Vec1D& rt,
                   const float G1, const float G2,
                   medianfilter::HorizontalMedianFilter& filterH,
                   medianfilter::VerticalMedianFilter& filterV);
@@ -75,11 +75,17 @@ class DecomposeSTN {
 
     Vec1D fft_1;
     Vec1D fft_1_tn;
-    Vec1D real_fft_1;
+    Vec1D real_fft_1_s;
+    Vec1D real_fft_1_tn;
+    Vec1D imag_fft_1_s;
+    Vec1D imag_fft_1_tn;
 
     Vec1D fft_2;
     Vec1D fft_2_ns;
-    Vec1D real_fft_2;
+    Vec1D real_fft_2_t;
+    Vec1D imag_fft_2_t;
+    Vec1D real_fft_2_ns;
+    Vec1D imag_fft_2_ns;
     
     Vec1D rtS;
     Vec1D rtTN;

@@ -24,13 +24,12 @@ void dsp::DecomposeSTN::setWindowTN(const int newWindowSizeTN) {
 }
 
 // TODO better types so we avoid useless allocation
-void dsp::DecomposeSTN::fuzzySTN(STN& stn, const Vec1D &xReal, Vec1D& rt,
+void dsp::DecomposeSTN::fuzzySTN(STN& stn, Vec1D& rt,
                                  const float G1, const float G2,
                                  medianfilter::HorizontalMedianFilter& filterH,
                                  medianfilter::VerticalMedianFilter& filterV) {
 
-    const auto len = xReal.size();
-    juce::FloatVectorOperations::abs(rt.data(), xReal.data(), len);
+    const auto len = rt.size();
     
     const auto& xHorizonal = filterH.process(rt);
     const auto& xVertical = filterV.process(rt);
@@ -131,21 +130,29 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     juce::FloatVectorOperations::multiply(fft_1.data(), windowS.data(), fftSizeS); // windowing
     forwardFFT.performRealOnlyForwardTransform(fft_1.data()); // FFT
     
-    helpers::deinterleaveRealFFT(real_fft_1, fft_1, fftSizeS); // deinterleaving for easiness of calcs
+    helpers::absInterleavedFFT(rtS, fft_1, fftSizeS); // abs of complex vector
+    // deinterleaving for easiness of calcs
+    helpers::deinterleaveRealFFT(real_fft_1_s, fft_1, fftSizeS);
+    helpers::deinterleaveImagFFT(imag_fft_1_s, fft_1, fftSizeS);
+    juce::FloatVectorOperations::copy(real_fft_1_tn.data(), real_fft_1_s.data(), fftSizeS);
+    juce::FloatVectorOperations::copy(imag_fft_1_tn.data(), imag_fft_1_s.data(), fftSizeS);
     
-    fuzzySTN(stn1, real_fft_1, rtS,
+    fuzzySTN(stn1, rtS,
              threshold_s_1, threshold_s_2,
              medianFilterHorS, medianFilterVerS);
     
-    juce::FloatVectorOperations::multiply(stn1.S.data(), real_fft_1.data(), fftSizeS); // Apply sines mask
+    juce::FloatVectorOperations::multiply(real_fft_1_s.data(), stn1.S.data(),  fftSizeS); // Apply sines mask real
+    juce::FloatVectorOperations::multiply(imag_fft_1_s.data(), stn1.S.data(),  fftSizeS); // Apply sines mask imag
     
     juce::FloatVectorOperations::add(stn1.T.data(), stn1.N.data(), fftSizeS); // Add transients and noise masks
-    juce::FloatVectorOperations::multiply(stn1.T.data(), real_fft_1.data(), fftSizeS); // Apply summed mask
+    juce::FloatVectorOperations::multiply(real_fft_1_tn.data(), stn1.T.data(), fftSizeS); // Apply summed mask real
+    juce::FloatVectorOperations::multiply(imag_fft_1_tn.data(), stn1.T.data(), fftSizeS); // Apply summed mask imag
     
     // interleave the samples back
-    juce::FloatVectorOperations::copy(fft_1_tn.data(), fft_1.data(), fft_1.size());
-    helpers::interleaveRealFFT(fft_1, stn1.S, fftSizeS);
-    helpers::interleaveRealFFT(fft_1_tn, stn1.T, fftSizeS);
+    helpers::interleaveRealFFT(fft_1, real_fft_1_s, fftSizeS); // TODO PRZEPISZ NA wspolna funkcje intearleave and deinterlaeve
+    helpers::interleaveImagFFT(fft_1, imag_fft_1_s, fftSizeS);
+    helpers::interleaveRealFFT(fft_1_tn, real_fft_1_tn, fftSizeS);
+    helpers::interleaveImagFFT(fft_1_tn, imag_fft_1_tn, fftSizeS);
     
     inverseFFTS.performRealOnlyInverseTransform(fft_1.data()); // IFFT
     inverseFFTTN.performRealOnlyInverseTransform(fft_1_tn.data());
@@ -156,11 +163,10 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     juce::FloatVectorOperations::multiply(fft_1.data(), windowCorrection, fftSizeS); // overlap add scaling
     
     juce::FloatVectorOperations::multiply(fft_1_tn.data(), windowCorrection, fftSizeS); // overlap add scaling
-    juce::FloatVectorOperations::add(bufferTN.data() + ptr, fft_1_tn.data(), fftSizeS - ptr); // add samples to circular buffer
-    juce::FloatVectorOperations::add(bufferTN.data(), fft_1_tn.data() + (fftSizeS - ptr), ptr); // add samples to circular buffer
     
     for (auto j = 0; j < fftSizeS; j++) {
         bufferS[(readPtr + j) % bufferS.size()] += fft_1[j];
+        bufferTN[(ptr + j) % bufferTN.size()] += fft_1_tn[j];
     }
 }
 
@@ -174,21 +180,30 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), fftSizeTN); // windowing
     forwardFFTTN.performRealOnlyForwardTransform(fft_2.data());
     
-    helpers::deinterleaveRealFFT(real_fft_2, fft_2, fftSizeTN); // deinterleaving for easiness of calcs
+    helpers::absInterleavedFFT(rtTN, fft_2, fftSizeTN); // abs of complex vector
+    // deinterleaving for easiness of calcs
+    helpers::deinterleaveRealFFT(real_fft_2_t, fft_2, fftSizeTN);
+    helpers::deinterleaveImagFFT(imag_fft_2_t, fft_2, fftSizeTN);
+    juce::FloatVectorOperations::copy(real_fft_2_ns.data(), real_fft_2_t.data(), fftSizeTN);
+    juce::FloatVectorOperations::copy(imag_fft_2_ns.data(), imag_fft_2_t.data(), fftSizeTN);
     
-    fuzzySTN(stn2, real_fft_2, rtTN,
+    
+    fuzzySTN(stn2, rtTN,
              threshold_tn_1, threshold_tn_2,
              medianFilterHorTN, medianFilterVerTN);
 
-    juce::FloatVectorOperations::multiply(stn2.T.data(), real_fft_2.data(), fftSizeTN); // Apply sines mask
+    juce::FloatVectorOperations::multiply(real_fft_2_t.data(), stn2.T.data(), fftSizeTN); // Apply sines mask
+    juce::FloatVectorOperations::multiply(imag_fft_2_t.data(), stn2.T.data(), fftSizeTN); // Apply sines mask
 
     juce::FloatVectorOperations::add(stn2.N.data(), stn2.S.data(), fftSizeTN); // Add noise and sines masks
-    juce::FloatVectorOperations::multiply(stn2.N.data(), real_fft_2.data(), fftSizeTN); // Apply summed mask
+    juce::FloatVectorOperations::multiply(real_fft_2_ns.data(), stn2.N.data(), fftSizeTN); // Apply summed mask
+    juce::FloatVectorOperations::multiply(imag_fft_2_ns.data(), stn2.N.data(), fftSizeTN); // Apply summed mask
     
     // interleave the samples back
-    juce::FloatVectorOperations::copy(fft_2_ns.data(), fft_2.data(), fft_2.size());
-    helpers::interleaveRealFFT(fft_2, stn2.T, fftSizeTN);
-    helpers::interleaveRealFFT(fft_2_ns, stn2.N, fftSizeTN);
+    helpers::interleaveRealFFT(fft_2, real_fft_2_t, fftSizeTN); // TODO PRZEPISZ NA wspolna funkcje intearleave and deinterlaeve
+    helpers::interleaveImagFFT(fft_2, imag_fft_2_t, fftSizeTN);
+    helpers::interleaveRealFFT(fft_2_ns, real_fft_2_ns, fftSizeTN);
+    helpers::interleaveImagFFT(fft_2_ns, imag_fft_2_ns, fftSizeTN);
     
     inverseFFTT.performRealOnlyInverseTransform(fft_2.data()); // IFFT
     inverseFFTN.performRealOnlyInverseTransform(fft_2_ns.data());
@@ -223,7 +238,10 @@ void dsp::DecomposeSTN::prepare() {
     windowS.resize(fftSizeS);
     fft_1.resize(fftSizeS*2);
     fft_1_tn.resize(fftSizeS*2);
-    real_fft_1.resize(fftSizeS);
+    real_fft_1_s.resize(fftSizeS);
+    imag_fft_1_s.resize(fftSizeS);
+    real_fft_1_tn.resize(fftSizeS);
+    imag_fft_1_tn.resize(fftSizeS);
     rtS.resize(fftSizeS);
     stn1.resize(fftSizeS);
     
@@ -246,7 +264,10 @@ void dsp::DecomposeSTN::prepare() {
     windowTN.resize(fftSizeTN);
     fft_2.resize(fftSizeTN * 2);
     fft_2_ns.resize(fftSizeTN * 2);
-    real_fft_2.resize(fftSizeTN);
+    real_fft_2_t.resize(fftSizeTN);
+    imag_fft_2_t.resize(fftSizeTN);
+    real_fft_2_ns.resize(fftSizeTN);
+    imag_fft_2_ns.resize(fftSizeTN);
     rtTN.resize(fftSizeTN);
     stn2.resize(fftSizeTN);
 

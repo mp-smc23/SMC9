@@ -24,8 +24,8 @@ class HorizontalMedianFilter final : public MedianFilterBase {
             juce::FloatVectorOperations::copy(kernel.data(), median.data(), filterSize);
 
             // Find the median element using nth_element
-            std::nth_element(kernel.begin(), kernel.begin() + pad, kernel.end());
-            result[h] = kernel[pad];
+            std::nth_element(kernel.begin(), kernel.begin() + (pad - 1), kernel.end());
+            result[h] = kernel[pad - 1];
         }
 
         return result;
