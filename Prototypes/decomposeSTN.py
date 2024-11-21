@@ -9,6 +9,9 @@ from scipy import signal as sig
 from scipy import ndimage
 import numpy as np
 
+from scipy import ndimage, datasets
+import matplotlib.pyplot as plt
+
 def decSTN(x,Fs,nWin1,nWin2):
 
     nHop1 = nWin1*7//8
@@ -43,8 +46,10 @@ def decSTN(x,Fs,nWin1,nWin2):
 
 # Extract STN masks from transientness of input STFT
 def fuzzySTN(X,G2,G1,nMedianH,nMedianV):
-
-    X_h_median = ndimage.median_filter(np.absolute(X),size=(1,nMedianH+1),mode='constant')
+    print("Filter Size: ", nMedianH)
+    nMedianH = nMedianH//4
+    # X_h_median = ndimage.median_filter(np.absolute(X),size=(1,nMedianH+1),mode='constant')
+    X_h_median = ndimage.median_filter(np.absolute(X),size=(1,nMedianH+1),mode='constant', origin=(0,-nMedianH//2))
     X_v_median = ndimage.median_filter(np.absolute(X),size=(nMedianV+1,1),mode='constant')    
     
     Rt = np.divide(X_v_median,(X_v_median + X_h_median)+np.finfo(float).eps)

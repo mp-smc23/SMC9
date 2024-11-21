@@ -39,20 +39,6 @@ print("========================")
 print("Pitch Shift Semitones:", pitch_shift_semitones)
 print("Pitch Shift Ratio:", pitch_shift_ratio)
 
-ploting.plotSTN(x=audio, xs=xs, xt=xt, xn=xn, sr=fs)
-
-
-input('Press Enter to play the sines...')
-sd.play(xs, fs)
-
-input('Press Enter to play the transients...')
-sd.play(xt, fs)
-
-input('Press Enter to play the noise...')
-sd.play(xn, fs)
-
-input('Press Enter to continue')
-
 
 # Sinusoids - pitch shifting
 xs_shifted = librosa.effects.pitch_shift(xs, sr=fs, n_steps=pitch_shift_semitones)

@@ -130,6 +130,7 @@ def noise_morphing(x: np.ndarray, original_signal_len: int, n_fft: int, window: 
     """
 
     white_noise = np.random.normal(0, 1, int(np.ceil(original_signal_len*stretch_ratio))) # generate white noise
+    white_noise = white_noise / np.max(np.abs(white_noise)) # normalize it
 
     E = librosa.stft(white_noise, n_fft=n_fft, hop_length=hop_length, window=window) # run stft on it 
 
@@ -139,6 +140,9 @@ def noise_morphing(x: np.ndarray, original_signal_len: int, n_fft: int, window: 
 
     E = E / np.sqrt(np.sum(window**2)) # normalize by the window energy to ensure spectral magnitude equals 1
 
+    print("X", x[1,0])
+    print("E", E[1,0])
+    print("XE", (x * E)[1,0])
     # multiply each frame of the white noise by the interpolated frame of the input's noise (x)
     return x * E # element wise multiplication
 

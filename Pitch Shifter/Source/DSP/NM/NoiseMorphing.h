@@ -23,6 +23,7 @@ class NoiseMorphing {
     
     void processFrame();
     void framesInterpolation();
+    void generateNoise(int size);
     void noiseMorphing(Vec1D& dest, const int ptr);
     
     int fftSize{2048};
@@ -38,8 +39,8 @@ class NoiseMorphing {
 
     // Noise
     // Define random generator with Gaussian distribution
-    const float mean = 0.0;
-    const float stddev = 0.1;
+    const float mean = 0.0f;
+    const float stddev = 1.f;
     std::mt19937 generator{std::random_device{}()};
     std::normal_distribution<float> dist{mean, stddev};
     
@@ -58,17 +59,21 @@ class NoiseMorphing {
     
     std::vector<Vec1D> interpolatedFrames;
     Vec1D stretched;
+    Vec1D stretchedUnwinded;
     
-    int newSamplesCount{0};
-    int writePtr{0};
-    int readPtr{0};
-    int writePtrNoise{0};
-
+    int newSamplesCount{0}; // ok
+    int writeReadPtrInput{0}; //ok
+    int writeReadPtrNoise{0}; // ok
+    int writePtrStretched{0}; //ok
+    int readPtrStretched{0}; //ok
+    
     juce::WindowedSincInterpolator interpolator;
     
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
     
     const float windowCorrection{4.f / 3.0f}; // overlap 50%
+    
+    
     
 };
 } // namespace dsp

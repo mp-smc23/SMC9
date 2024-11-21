@@ -100,7 +100,8 @@ def stn(xHorizonal: np.ndarray, xVertical: np.ndarray, G1: float, G2: float) -> 
 
 audio_file = "Soft Spot"
 # Load audio file using librosa 
-x, fs = librosa.load(f"../Evaluation/Audio/{audio_file}.aif", sr=None)
+fs = 44100
+x = librosa.tone(440, duration=1, sr=fs) #librosa.load(f"../Evaluation/Audio/{audio_file}.aif", sr=None)
 
 win = 8192
 hop = win*7//8

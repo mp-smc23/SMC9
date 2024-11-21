@@ -196,11 +196,18 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     getParametersValues();
     
+//    for(auto i = 0; i < numSamples; i++){
+//        buffer.getWritePointer(0)[i] = ((double) rand() / (RAND_MAX));
+//    }
+//    
     decomposeSTN.process(buffer, abS, abT, abN);
     
+    waveformBufferServiceS->insertBuffers(abN);
     noiseMorphing.process(abN);
     
-//    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+    waveformBufferServiceN->insertBuffers(abN);
+    buffer.copyFrom(0, 0, abN, 0, 0, numSamples);
+    buffer.copyFrom(1, 0, abN, 0, 0, numSamples);
 //    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
 //    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
     
@@ -218,7 +225,6 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
 //    waveformBufferServiceS->insertBuffers(abS);
 //    waveformBufferServiceT->insertBuffers(abT);
-//    waveformBufferServiceN->insertBuffers(abN);
     
     waveformBufferServiceOut->insertBuffers(buffer);
 
