@@ -17,6 +17,8 @@ class NoiseMorphing {
     void prepare();
     void process(juce::AudioBuffer<float>& buffer);
 
+    int getLatency() const { return fftSize + (interpolator.getBaseLatency()) / pitchShiftRatio; }
+    
   private:
     
     void processFrame();
@@ -30,6 +32,9 @@ class NoiseMorphing {
     
     float pitchShiftRatio{2.f}; // linear
     const int maxPitchShiftRatio{2};
+    int hopSizeStretch{512};
+    float windowCorrectionStretch{4.f / 3.0f};
+    
 
     // Noise
     // Define random generator with Gaussian distribution
@@ -41,27 +46,30 @@ class NoiseMorphing {
     juce::dsp::FFT forwardFFT;
     juce::dsp::FFT forwardFFTNoise;
     juce::dsp::FFT inverseFFT;
+    
     Vec1D window;
-
     Vec1D input;
     Vec1D whiteNoise;
-    Vec1D bufferOutput;
+    Vec1D output;
     Vec1D fft;
     Vec1D fftAbs;
     Vec1D fftAbsPrev;
     Vec1D fftNoise;
     
+    std::vector<Vec1D> interpolatedFrames;
     Vec1D stretched;
     
     int newSamplesCount{0};
     int writePtr{0};
     int readPtr{0};
+    int writePtrNoise{0};
 
-    juce::GenericInterpolator<juce::WindowedSincInterpolator, 2048> interpolator;
+    juce::WindowedSincInterpolator interpolator;
     
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
     
     const float windowCorrection{4.f / 3.0f}; // overlap 50%
+    
 };
 } // namespace dsp
 

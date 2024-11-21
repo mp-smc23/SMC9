@@ -21,7 +21,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
                      #endif
                        ),
     processSpec(std::make_shared<juce::dsp::ProcessSpec>()),
-    decomposeSTN(processSpec)
+    decomposeSTN(processSpec),
+    noiseMorphing(processSpec)
 #endif
 {
     waveformBufferServiceS = std::make_shared<services::WaveformBufferQueueService>();
@@ -35,6 +36,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     
     addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
 //    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
+    
+    noiseMorphing.setPitchShiftSemitones(7);
 }
 
 PitchShifterAudioProcessor::~PitchShifterAudioProcessor()
@@ -112,8 +115,6 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     const auto blockSamples = static_cast<int>(sampleRate * 0.001 * pitchBlockMs);
     const auto hopSizeSamples = static_cast<int>(blockSamples / 4);
     stretch.configure(channels, blockSamples, hopSizeSamples);
-    
-    setLatencySamples(2048+512);
 
     // query the current configuration
     DBG("Block Samples: " << stretch.blockSamples());
@@ -137,8 +138,12 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         processSpec->sampleRate = sampleRate;
         
         decomposeSTN.prepare();
+        noiseMorphing.prepare();
     }
 
+    
+    
+    setLatencySamples(decomposeSTN.getLatency() + noiseMorphing.getLatency());
 }
 
 void PitchShifterAudioProcessor::releaseResources()
@@ -190,12 +195,14 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const auto numSamples = buffer.getNumSamples();
     
     getParametersValues();
-      
+    
     decomposeSTN.process(buffer, abS, abT, abN);
     
-    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
+    noiseMorphing.process(abN);
+    
+//    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+//    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
+//    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
     
     // ===== Pitch Shifting by signal smith =====
 //    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
@@ -209,9 +216,10 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 //        buffer.copyFrom(c, 0, outputPointers[c], numSamples);
 //    }
     
-    waveformBufferServiceS->insertBuffers(abS);
-    waveformBufferServiceT->insertBuffers(abT);
-    waveformBufferServiceN->insertBuffers(abN);
+//    waveformBufferServiceS->insertBuffers(abS);
+//    waveformBufferServiceT->insertBuffers(abT);
+//    waveformBufferServiceN->insertBuffers(abN);
+    
     waveformBufferServiceOut->insertBuffers(buffer);
 
     

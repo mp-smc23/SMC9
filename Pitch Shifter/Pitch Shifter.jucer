@@ -77,6 +77,7 @@
     </GROUP>
   </MAINGROUP>
   <MODULES>
+    <MODULE id="juce_analytics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_animation" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
@@ -92,13 +93,14 @@
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" xcodeValidArchs="arm64">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="Pitch Shifter" headerPath="../../../libs&#10;../&#10;"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="Pitch Shifter" headerPath="../../../libs&#10;"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="Pitch Shifter" headerPath="../../../libs&#10;../"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_dsp" path="../../../../JUCE/modules"/>
@@ -115,6 +117,8 @@
         <MODULEPATH id="juce_audio_processors" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_analytics" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>

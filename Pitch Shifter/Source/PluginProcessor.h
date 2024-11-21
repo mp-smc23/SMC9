@@ -9,9 +9,9 @@
 #pragma once
 
 #include <JuceHeader.h>
-//#include "External/shift-stretch.h"
 #include "External/signalsmith-stretch.h"
 #include "DSP/STN/decomposeSTN.h"
+#include "DSP/NM/NoiseMorphing.h"
 #include "Services/WaveformBufferQueueService.h"
 #include "Services/SpectrumBufferQueueService.h"
 
@@ -89,10 +89,15 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     
     signalsmith::stretch::SignalsmithStretch<float> stretch;
     dsp::DecomposeSTN decomposeSTN;
+    dsp::NoiseMorphing noiseMorphing;
     
     juce::AudioBuffer<float> abS;
     juce::AudioBuffer<float> abT;
     juce::AudioBuffer<float> abN;
+    
+    int sinesLatency{0};
+    int transientLatency{0};
+    int noiseLatency{0};
     
     std::vector<float *> outputPointers;
     std::vector<std::vector<float>> outputBuffer;

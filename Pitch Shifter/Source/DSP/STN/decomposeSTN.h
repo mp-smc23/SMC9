@@ -33,6 +33,8 @@ class DecomposeSTN {
                  juce::AudioBuffer<float> &S, juce::AudioBuffer<float> &T,
                  juce::AudioBuffer<float> &N);
     void prepare();
+    
+    int getLatency() const { return fftSizeS + fftSizeTN; }
 
   private:
     void decompose_1(const int ptr);
