@@ -23,7 +23,6 @@ void dsp::DecomposeSTN::setWindowTN(const int newWindowSizeTN) {
     prepare();
 }
 
-// TODO better types so we avoid useless allocation
 void dsp::DecomposeSTN::fuzzySTN(STN& stn, Vec1D& rt,
                                  const float G1, const float G2,
                                  medianfilter::HorizontalMedianFilter& filterH,
