@@ -74,16 +74,21 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     
     //==============================================================================
     
-    juce::AudioParameterChoice* pitchTypeParam;
+    juce::AudioParameterChoice* fftSizeParam;
+    int fftSizes[4]{512, 1024, 2048, 4096};
     
-    juce::AudioParameterFloat* pitchShiftParam;
-    juce::SmoothedValue<float> pitchShiftSmoothing; // TODO use smoothing
+    juce::AudioParameterInt* pitchShiftParam;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> pitchShiftSmoothing;
+    
+    juce::AudioParameterFloat* boundsSinesParam;
+    juce::AudioParameterFloat* boundsTransientsParam;
     
     float pitchShift{1.f};
-    const float pitchShiftMin{0.5f};
-    const float pitchShiftMax{2.f};
+    const int pitchShiftMin{-12};
+    const int pitchShiftMax{24};
     
     const double pitchBlockMs{50.};
+    const int smoothingRate{10}; // number of steps to reach target value
     
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
     
@@ -94,13 +99,13 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     juce::AudioBuffer<float> abS;
     juce::AudioBuffer<float> abT;
     juce::AudioBuffer<float> abN;
+       
+    juce::dsp::DelayLine<float> sinesDelayLine;
+    juce::dsp::DelayLine<float> transientsDelayLine;
+    juce::dsp::DelayLine<float> noiseDelayLine;
     
-    int sinesLatency{0};
-    int transientLatency{0};
-    int noiseLatency{0};
-    
-    std::vector<float *> outputPointers;
-    std::vector<std::vector<float>> outputBuffer;
+    std::vector<float *> outputSinesPtrs;
+    std::vector<std::vector<float>> outputSinesBuf;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PitchShifterAudioProcessor)
 };

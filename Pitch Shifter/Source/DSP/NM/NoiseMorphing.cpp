@@ -7,20 +7,29 @@ dsp::NoiseMorphing::NoiseMorphing(std::shared_ptr<juce::dsp::ProcessSpec> procSp
     };
 
 void dsp::NoiseMorphing::setPitchShiftSemitones(const int semitones) {
-    pitchShiftRatio = std::powf(2.f, semitones / 12.f);
-    hopSizeStretch = static_cast<int>(hopSize * pitchShiftRatio / 2.f);
+    const auto ratio = std::powf(2.f, semitones / 12.f);
+    this->setPitchShiftRatio(ratio);
+}
+
+void dsp::NoiseMorphing::setPitchShiftRatio(const float newPitchShiftRatio) {
+    if (pitchShiftRatio == newPitchShiftRatio) return;
+    
+    pitchShiftRatio = newPitchShiftRatio;
+    hopSizeStretch = static_cast<int>(hopSize * newPitchShiftRatio / 2.f);
     windowCorrectionStretch = (8.f * hopSizeStretch) / (3.f * fftSize);
     
-    DBG("Pitch Shift Ratio = " + juce::String(pitchShiftRatio));
+    DBG("Pitch Shift Ratio = " + juce::String(newPitchShiftRatio));
     DBG("Hop Size Stretch = " + juce::String(hopSizeStretch));
     DBG("Window Correction Stretch = " + juce::String(windowCorrectionStretch));
     
-    jassert(hopSizeStretch * 2 == pitchShiftRatio * hopSize);
+    jassert(hopSizeStretch * 2 == newPitchShiftRatio * hopSize);
 }
 
 void dsp::NoiseMorphing::setFFTSize(const int newFFTSize) {
     // Assert power of two
     const auto fftSizePow2 = newFFTSize - (newFFTSize % 2);
+    if(fftSize == fftSizePow2) return;
+    
     DBG("New Window Size = " + juce::String(fftSizePow2));
     fftSize = fftSizePow2;
     hopSize = fftSize / overlap;

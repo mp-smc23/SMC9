@@ -12,12 +12,13 @@ class NoiseMorphing {
     ~NoiseMorphing() = default;
 
     void setPitchShiftSemitones(const int semitones);
+    void setPitchShiftRatio(const float newPitchShiftRatio);
     void setFFTSize(const int newFFTSize);
     
     void prepare();
     void process(juce::AudioBuffer<float>& buffer);
 
-    int getLatency() const { return fftSize + (interpolator.getBaseLatency()) / pitchShiftRatio; }
+    int getLatency() const { return fftSize + interpolator.getBaseLatency(); }
     
   private:
     
@@ -36,7 +37,6 @@ class NoiseMorphing {
     int hopSizeStretch{512};
     float windowCorrectionStretch{4.f / 3.0f};
     
-
     // Noise
     // Define random generator with Gaussian distribution
     const float mean = 0.0f;
@@ -72,9 +72,6 @@ class NoiseMorphing {
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
     
     const float windowCorrection{4.f / 3.0f}; // overlap 50%
-    
-    
-    
 };
 } // namespace dsp
 

@@ -47,10 +47,6 @@
         <GROUP id="{69CE35CA-77C8-BFBD-F323-EEA902BFDC01}" name="Helpers">
           <FILE id="MVJqaf" name="Interleave.h" compile="0" resource="0" file="Source/DSP/Helpers/Interleave.h"/>
         </GROUP>
-        <GROUP id="{9C3B68F5-6C43-D588-37CC-BA4D7F8C4A4D}" name="Resampling">
-          <FILE id="MkAqt8" name="Resample.cpp" compile="1" resource="0" file="Source/DSP/Resampling/Resample.cpp"/>
-          <FILE id="PQYjnV" name="Resample.h" compile="0" resource="0" file="Source/DSP/Resampling/Resample.h"/>
-        </GROUP>
         <GROUP id="{4E947770-8F6C-4524-F2DB-D4CEE753AE16}" name="NM">
           <FILE id="KdhwlK" name="NoiseMorphing.cpp" compile="1" resource="0"
                 file="Source/DSP/NM/NoiseMorphing.cpp"/>

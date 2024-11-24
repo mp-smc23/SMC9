@@ -8,6 +8,8 @@ dsp::DecomposeSTN::DecomposeSTN(
 void dsp::DecomposeSTN::setWindowS(const int newWindowSizeS) {
     // Assert power of two
     const auto winSize = newWindowSizeS - (newWindowSizeS % 2);
+    if(fftSizeS == winSize) return;
+    
     DBG("New Window Size S = " + juce::String(winSize));
     fftSizeS = winSize;
 
@@ -17,10 +19,22 @@ void dsp::DecomposeSTN::setWindowS(const int newWindowSizeS) {
 void dsp::DecomposeSTN::setWindowTN(const int newWindowSizeTN) {
     // Assert power of two
     const auto winSize = newWindowSizeTN - (newWindowSizeTN % 2);
+    if(fftSizeTN == winSize) return;
+    
     DBG("New Window Size TN = " + juce::String(winSize));
     fftSizeTN = winSize;
 
     prepare();
+}
+
+void dsp::DecomposeSTN::setThresholdSines(const float thresholdLow) {
+    threshold_s_2 = thresholdLow;
+    threshold_s_1 = thresholdLow + 0.1f;
+}
+
+void dsp::DecomposeSTN::setThresholdTransients(const float thresholdLow) {
+    threshold_tn_2 = thresholdLow;
+    threshold_tn_1 = thresholdLow + 0.1f;
 }
 
 void dsp::DecomposeSTN::fuzzySTN(STN& stn, Vec1D& rt,

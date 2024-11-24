@@ -28,6 +28,8 @@ class DecomposeSTN {
 
     void setWindowS(const int newWindowSizeS);
     void setWindowTN(const int newWindowSizeTN);
+    void setThresholdSines(const float thresholdLow);
+    void setThresholdTransients(const float thresholdLow);
 
     void process(const juce::AudioBuffer<float> &buffer,
                  juce::AudioBuffer<float> &S, juce::AudioBuffer<float> &T,
@@ -112,10 +114,10 @@ class DecomposeSTN {
     medianfilter::VerticalMedianFilter medianFilterVerS;
     medianfilter::VerticalMedianFilter medianFilterVerTN;
 
-    const float threshold_s_1{0.8f};
-    const float threshold_s_2{0.7f};
-    const float threshold_tn_1{0.85f};
-    const float threshold_tn_2{0.75f};
+    float threshold_s_1{0.8f};
+    float threshold_s_2{0.7f};
+    float threshold_tn_1{0.85f};
+    float threshold_tn_2{0.75f};
     
     const float windowCorrection{1.f / 3.0f};
 };

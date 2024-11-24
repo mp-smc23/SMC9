@@ -22,7 +22,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
                        ),
     processSpec(std::make_shared<juce::dsp::ProcessSpec>()),
     decomposeSTN(processSpec),
-    noiseMorphing(processSpec)
+    noiseMorphing(processSpec),
+    sinesDelayLine(4096), transientsDelayLine(4096), noiseDelayLine(4096)
 #endif
 {
     waveformBufferServiceS = std::make_shared<services::WaveformBufferQueueService>();
@@ -34,10 +35,13 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     spectrumBufferServiceT = std::make_shared<services::SpectrumBufferQueueService>();
     spectrumBufferServiceN = std::make_shared<services::SpectrumBufferQueueService>();
     
-    addParameter(pitchShiftParam = new juce::AudioParameterFloat({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 1.f));
-//    addParameter(pitchTypeParam = new juce::AudioParameterChoice({"Pitch Type", 1}, "Pitch Type", {"Soundsmith", "SNT", "Other"}, 0));
+    addParameter(pitchShiftParam = new juce::AudioParameterInt({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 0));
+    addParameter(boundsSinesParam = new juce::AudioParameterFloat({"Bounds Sines", 1}, "Bounds Sines", 0.4f, 0.9f, 0.7f));
+    addParameter(boundsTransientsParam = new juce::AudioParameterFloat({"Bounds Transients", 1}, "Bounds Transients", 0.4f, 0.9f, 0.75f));
     
-    noiseMorphing.setPitchShiftSemitones(7);
+    addParameter(fftSizeParam = new juce::AudioParameterChoice({"STN FFT Size", 1}, "STN FFT Size", {"512", "1024", "2048", "4096"}, 2));
+    
+    pitchShiftSmoothing = juce::SmoothedValue(0.f);
 }
 
 PitchShifterAudioProcessor::~PitchShifterAudioProcessor()
@@ -114,23 +118,17 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 //    stretch.presetDefault(channels, sampleRate);
     const auto blockSamples = static_cast<int>(sampleRate * 0.001 * pitchBlockMs);
     const auto hopSizeSamples = static_cast<int>(blockSamples / 4);
-    stretch.configure(channels, blockSamples, hopSizeSamples);
-
-    // query the current configuration
-    DBG("Block Samples: " << stretch.blockSamples());
-    DBG("Interval Samples: " << stretch.intervalSamples());
-    DBG("============ LATENCY ============");
-    DBG("Input: " << stretch.inputLatency() << "| Output: " << stretch.outputLatency() << "| Total: " << (stretch.inputLatency() + stretch.outputLatency()) << " | Total (ms): " << ((stretch.inputLatency() + stretch.outputLatency())/sampleRate * 1000));
+    stretch.configure(1, blockSamples, hopSizeSamples);
     
-    outputPointers.resize(channels);
-    outputBuffer.resize(channels);
-    for(auto& ab : outputBuffer){
+    outputSinesPtrs.resize(1);
+    outputSinesBuf.resize(1);
+    for(auto& ab : outputSinesBuf){
         ab.resize(samplesPerBlock);
     }
     
-    abS.setSize(channels, samplesPerBlock);
-    abT.setSize(channels, samplesPerBlock);
-    abN.setSize(channels, samplesPerBlock);
+    abS.setSize(1, samplesPerBlock);
+    abT.setSize(1, samplesPerBlock);
+    abN.setSize(1, samplesPerBlock);
     
     if(processSpec->numChannels != channels || processSpec->maximumBlockSize != samplesPerBlock || processSpec->sampleRate != sampleRate){
         processSpec->maximumBlockSize = samplesPerBlock;
@@ -141,9 +139,41 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         noiseMorphing.prepare();
     }
 
+    pitchShiftSmoothing.reset(smoothingRate);
     
     
-    setLatencySamples(decomposeSTN.getLatency() + noiseMorphing.getLatency());
+    DBG("============ CONFIGURATION ============");
+    DBG("Sample Rate: " << sampleRate);
+    DBG("Samples Per Block: " << samplesPerBlock);
+    DBG("Channels: " << channels);
+    DBG("Stretch Block Samples: " << stretch.blockSamples());
+    DBG("Stretch Interval Samples: " << stretch.intervalSamples());
+    
+    DBG("============ LATENCY ============");
+    DBG("Input: " << stretch.inputLatency() << "| Output: " << stretch.outputLatency() << "| Total: " << (stretch.inputLatency() + stretch.outputLatency()) << " | Total (ms): " << ((stretch.inputLatency() + stretch.outputLatency()) / sampleRate * 1000));
+    DBG("Decompose STN: " << decomposeSTN.getLatency());
+    DBG("Noise Morphing: " << noiseMorphing.getLatency());
+    
+    const auto maxLatencySTN = juce::jmax(noiseMorphing.getLatency(), (stretch.inputLatency() + stretch.outputLatency()));
+    const auto sinesLatency = maxLatencySTN - (stretch.inputLatency() + stretch.outputLatency());
+    const auto transientsLatency = maxLatencySTN;
+    const auto noiseLatency = maxLatencySTN - noiseMorphing.getLatency();
+    setLatencySamples(decomposeSTN.getLatency() + maxLatencySTN);
+    
+    sinesDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
+    sinesDelayLine.setMaximumDelayInSamples(sinesLatency);
+    sinesDelayLine.setDelay(sinesLatency);
+    sinesDelayLine.reset();
+    
+    transientsDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
+    transientsDelayLine.setMaximumDelayInSamples(transientsLatency);
+    transientsDelayLine.setDelay(transientsLatency);
+    transientsDelayLine.reset();
+    
+    noiseDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
+    noiseDelayLine.setMaximumDelayInSamples(noiseLatency);
+    noiseDelayLine.setDelay(noiseLatency);
+    noiseDelayLine.reset();
 }
 
 void PitchShifterAudioProcessor::releaseResources()
@@ -179,8 +209,20 @@ bool PitchShifterAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 #endif
 
 void PitchShifterAudioProcessor::getParametersValues(){
-    pitchShift = pitchShiftParam->get();
+    pitchShiftSmoothing.setTargetValue(std::powf(2.f, pitchShiftParam->get() / 12.f));
+    pitchShift = pitchShiftSmoothing.getNextValue();
+    
+    stretch.setTransposeFactor(pitchShift);
+    noiseMorphing.setPitchShiftSemitones(pitchShiftParam->get()); // TODO test with ratio not semitones
+    
+    decomposeSTN.setThresholdSines(boundsSinesParam->get());
+    decomposeSTN.setThresholdTransients(boundsTransientsParam->get());
+    
+    const auto fftSize = fftSizes[fftSizeParam->getIndex()];
+    decomposeSTN.setWindowS(fftSize);
+    decomposeSTN.setWindowTN(static_cast<int>(fftSize * 0.25f));
 }
+
 
 void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
@@ -191,41 +233,52 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    const auto channels = totalNumInputChannels;
     const auto numSamples = buffer.getNumSamples();
     
+    // ===== Get Parameters =====
     getParametersValues();
     
-//    for(auto i = 0; i < numSamples; i++){
-//        buffer.getWritePointer(0)[i] = ((double) rand() / (RAND_MAX));
-//    }
-//    
+    // ===== Decompose STN =====
     decomposeSTN.process(buffer, abS, abT, abN);
     
-    waveformBufferServiceS->insertBuffers(abN);
+    // ===== Pitch Shifting =====
+    // = Sines by signal smith =
+    outputSinesPtrs[0] = outputSinesBuf[0].data();
+    
+    stretch.process(abS.getArrayOfReadPointers(), numSamples, outputSinesPtrs.data(), numSamples);
+    abS.copyFrom(0, 0, outputSinesPtrs[0], numSamples);
+
+    // = Noise =
     noiseMorphing.process(abN);
     
+    // ===== Latency Handling =====
+    // = Sines =
+    juce::dsp::AudioBlock<float> sinesAb(abS);
+    const juce::dsp::ProcessContextReplacing<float> contextSines(sinesAb);
+    sinesDelayLine.process(contextSines);
+    
+    // = Transients =
+    juce::dsp::AudioBlock<float> transAb(abT);
+    const juce::dsp::ProcessContextReplacing<float> contextTrans(transAb);
+    transientsDelayLine.process(contextTrans);
+    
+    // = Noise =
+    juce::dsp::AudioBlock<float> noiseAb(abN);
+    const juce::dsp::ProcessContextReplacing<float> contextNoise(noiseAb);
+    noiseDelayLine.process(contextNoise);
+
+    
+    // ===== S + T + N =====
+    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
+    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
+    
+    buffer.copyFrom (1, 0, buffer.getReadPointer (0), buffer.getNumSamples());
+    
+    // ===== Plotting =====
+    waveformBufferServiceS->insertBuffers(abS);
+    waveformBufferServiceT->insertBuffers(abT);
     waveformBufferServiceN->insertBuffers(abN);
-    buffer.copyFrom(0, 0, abN, 0, 0, numSamples);
-    buffer.copyFrom(1, 0, abN, 0, 0, numSamples);
-//    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
-//    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
-    
-    // ===== Pitch Shifting by signal smith =====
-//    for (int c = 0; c < channels; ++c) { // maybe could be just set in prepareToPlay?
-//        outputPointers[c] = outputBuffer[c].data();
-//    }
-//    
-//    stretch.setTransposeFactor(pitchShift);
-//    stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputPointers.data(), numSamples);
-//    
-//    for (int c = 0; c < channels; ++c) {
-//        buffer.copyFrom(c, 0, outputPointers[c], numSamples);
-//    }
-    
-//    waveformBufferServiceS->insertBuffers(abS);
-//    waveformBufferServiceT->insertBuffers(abT);
-    
     waveformBufferServiceOut->insertBuffers(buffer);
 
     
