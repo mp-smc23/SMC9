@@ -36,8 +36,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     spectrumBufferServiceN = std::make_shared<services::SpectrumBufferQueueService>();
     
     addParameter(pitchShiftParam = new juce::AudioParameterInt({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 0));
-    addParameter(boundsSinesParam = new juce::AudioParameterFloat({"Bounds Sines", 1}, "Bounds Sines", 0.4f, 0.9f, 0.7f));
-    addParameter(boundsTransientsParam = new juce::AudioParameterFloat({"Bounds Transients", 1}, "Bounds Transients", 0.4f, 0.9f, 0.75f));
+    addParameter(boundsSinesParam = new juce::AudioParameterFloat({"Bounds Sines", 1}, "Bounds Sines", 0.4f, 0.9f, 0.6f));
+    addParameter(boundsTransientsParam = new juce::AudioParameterFloat({"Bounds Transients", 1}, "Bounds Transients", 0.4f, 0.9f, 0.7f));
     
     addParameter(fftSizeParam = new juce::AudioParameterChoice({"STN FFT Size", 1}, "STN FFT Size", {"512", "1024", "2048", "4096"}, 2));
     

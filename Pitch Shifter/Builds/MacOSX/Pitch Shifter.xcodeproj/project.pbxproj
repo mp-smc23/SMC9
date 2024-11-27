@@ -142,9 +142,9 @@
 		9C9012E216B1AAA30880EC92 /* SpectrumGraph.cpp */ /* SpectrumGraph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SpectrumGraph.cpp; path = ../../Source/Components/SpectrumGraph.cpp; sourceTree = SOURCE_ROOT; };
 		A33E6299D25D226C0DA25004 /* include_juce_audio_plugin_client_AU_1.mm */ /* include_juce_audio_plugin_client_AU_1.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_plugin_client_AU_1.mm; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_AU_1.mm; sourceTree = SOURCE_ROOT; };
 		A5F57887A5A3C09466A717CB /* include_juce_audio_plugin_client_ARA.cpp */ /* include_juce_audio_plugin_client_ARA.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_audio_plugin_client_ARA.cpp; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_ARA.cpp; sourceTree = SOURCE_ROOT; };
+		A742C5C581DDD8CE1C93BA1E /* NoiseGenerator.h */ /* NoiseGenerator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NoiseGenerator.h; path = ../../Source/DSP/Helpers/NoiseGenerator.h; sourceTree = SOURCE_ROOT; };
 		A9047203232820500A6D4F90 /* include_juce_graphics_Sheenbidi.c */ /* include_juce_graphics_Sheenbidi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = include_juce_graphics_Sheenbidi.c; path = ../../JuceLibraryCode/include_juce_graphics_Sheenbidi.c; sourceTree = SOURCE_ROOT; };
 		A9D86C1C346B40EBB50A3FC1 /* include_juce_audio_basics.mm */ /* include_juce_audio_basics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_basics.mm; path = ../../JuceLibraryCode/include_juce_audio_basics.mm; sourceTree = SOURCE_ROOT; };
-		AA40A467DDB14388622BA113 /* Interleave.h */ /* Interleave.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Interleave.h; path = ../../Source/DSP/Helpers/Interleave.h; sourceTree = SOURCE_ROOT; };
 		AD7322023774CDBC0E8AC85F /* include_juce_graphics_Harfbuzz.cpp */ /* include_juce_graphics_Harfbuzz.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_graphics_Harfbuzz.cpp; path = ../../JuceLibraryCode/include_juce_graphics_Harfbuzz.cpp; sourceTree = SOURCE_ROOT; };
 		ADADD63C6B1671C418643506 /* atomicops.h */ /* atomicops.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = atomicops.h; path = ../../Source/Services/atomicops.h; sourceTree = SOURCE_ROOT; };
 		AE27C63CF27A1AB69896B13F /* PluginEditor.cpp */ /* PluginEditor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = PluginEditor.cpp; path = ../../Source/PluginEditor.cpp; sourceTree = SOURCE_ROOT; };
@@ -173,6 +173,7 @@
 		E1685ADE5AC24B030CFD7530 /* Accelerate.framework */ /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		E4D38D8EE667B1975E31909B /* include_juce_dsp.mm */ /* include_juce_dsp.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_dsp.mm; path = ../../JuceLibraryCode/include_juce_dsp.mm; sourceTree = SOURCE_ROOT; };
 		E760DD04DEF88DD30EFFDFEC /* include_juce_graphics.mm */ /* include_juce_graphics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_graphics.mm; path = ../../JuceLibraryCode/include_juce_graphics.mm; sourceTree = SOURCE_ROOT; };
+		E7C125CAF0F063C2A94E1E34 /* dsp.h */ /* dsp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = dsp.h; path = ../../Source/DSP/Helpers/dsp.h; sourceTree = SOURCE_ROOT; };
 		EE29C2BB8E7F73006B9E9FA1 /* SpectrumBufferQueueService.cpp */ /* SpectrumBufferQueueService.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SpectrumBufferQueueService.cpp; path = ../../Source/Services/SpectrumBufferQueueService.cpp; sourceTree = SOURCE_ROOT; };
 		F2C99CF4BD3EB4EE9784A403 /* NoiseMorphing.h */ /* NoiseMorphing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NoiseMorphing.h; path = ../../Source/DSP/NM/NoiseMorphing.h; sourceTree = SOURCE_ROOT; };
 		F2E44EDA2DB7669D599659B6 /* juce_VST3ManifestHelper.mm */ /* juce_VST3ManifestHelper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = juce_VST3ManifestHelper.mm; path = ../../../../../../JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.mm; sourceTree = SOURCE_ROOT; };
@@ -325,7 +326,8 @@
 		3036CA9B1B1266C961335B0E /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				AA40A467DDB14388622BA113,
+				E7C125CAF0F063C2A94E1E34,
+				A742C5C581DDD8CE1C93BA1E,
 			);
 			name = Helpers;
 			sourceTree = "<group>";

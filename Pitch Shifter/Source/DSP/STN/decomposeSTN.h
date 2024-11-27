@@ -1,6 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
-#include "../Helpers/Interleave.h"
+#include "../Helpers/dsp.h"
 #include "../MedianFilter/Vertical/VerticalMedianFilter.h"
 #include "../MedianFilter/Horizontal/HorizontalMedianFilter.h"
 

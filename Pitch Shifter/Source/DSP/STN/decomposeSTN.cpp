@@ -145,8 +145,7 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     
     helpers::absInterleavedFFT(rtS, fft_1, fftSizeS); // abs of complex vector
     // deinterleaving for easiness of calcs
-    helpers::deinterleaveRealFFT(real_fft_1_s, fft_1, fftSizeS);
-    helpers::deinterleaveImagFFT(imag_fft_1_s, fft_1, fftSizeS);
+    helpers::deinterleaveFFT(real_fft_1_s, imag_fft_1_s, fft_1, fftSizeS);
     juce::FloatVectorOperations::copy(real_fft_1_tn.data(), real_fft_1_s.data(), fftSizeS);
     juce::FloatVectorOperations::copy(imag_fft_1_tn.data(), imag_fft_1_s.data(), fftSizeS);
     
@@ -162,10 +161,8 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     juce::FloatVectorOperations::multiply(imag_fft_1_tn.data(), stn1.T.data(), fftSizeS); // Apply summed mask imag
     
     // interleave the samples back
-    helpers::interleaveRealFFT(fft_1, real_fft_1_s, fftSizeS); // TODO PRZEPISZ NA wspolna funkcje intearleave and deinterlaeve
-    helpers::interleaveImagFFT(fft_1, imag_fft_1_s, fftSizeS);
-    helpers::interleaveRealFFT(fft_1_tn, real_fft_1_tn, fftSizeS);
-    helpers::interleaveImagFFT(fft_1_tn, imag_fft_1_tn, fftSizeS);
+    helpers::interleaveFFT(fft_1, real_fft_1_s, imag_fft_1_s, fftSizeS);
+    helpers::interleaveFFT(fft_1_tn, real_fft_1_tn, imag_fft_1_tn, fftSizeS);
     
     inverseFFTS.performRealOnlyInverseTransform(fft_1.data()); // IFFT
     inverseFFTTN.performRealOnlyInverseTransform(fft_1_tn.data());
@@ -195,8 +192,7 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     
     helpers::absInterleavedFFT(rtTN, fft_2, fftSizeTN); // abs of complex vector
     // deinterleaving for easiness of calcs
-    helpers::deinterleaveRealFFT(real_fft_2_t, fft_2, fftSizeTN);
-    helpers::deinterleaveImagFFT(imag_fft_2_t, fft_2, fftSizeTN);
+    helpers::deinterleaveFFT(real_fft_2_t, imag_fft_2_t, fft_2, fftSizeTN);
     juce::FloatVectorOperations::copy(real_fft_2_ns.data(), real_fft_2_t.data(), fftSizeTN);
     juce::FloatVectorOperations::copy(imag_fft_2_ns.data(), imag_fft_2_t.data(), fftSizeTN);
     
@@ -213,10 +209,8 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     juce::FloatVectorOperations::multiply(imag_fft_2_ns.data(), stn2.N.data(), fftSizeTN); // Apply summed mask
     
     // interleave the samples back
-    helpers::interleaveRealFFT(fft_2, real_fft_2_t, fftSizeTN); // TODO PRZEPISZ NA wspolna funkcje intearleave and deinterlaeve
-    helpers::interleaveImagFFT(fft_2, imag_fft_2_t, fftSizeTN);
-    helpers::interleaveRealFFT(fft_2_ns, real_fft_2_ns, fftSizeTN);
-    helpers::interleaveImagFFT(fft_2_ns, imag_fft_2_ns, fftSizeTN);
+    helpers::interleaveFFT(fft_2, real_fft_2_t, imag_fft_2_t, fftSizeTN);
+    helpers::interleaveFFT(fft_2_ns, real_fft_2_ns, imag_fft_2_ns, fftSizeTN);
     
     inverseFFTT.performRealOnlyInverseTransform(fft_2.data()); // IFFT
     inverseFFTN.performRealOnlyInverseTransform(fft_2_ns.data());
