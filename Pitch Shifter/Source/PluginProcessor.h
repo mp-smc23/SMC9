@@ -18,6 +18,7 @@
 //==============================================================================
 /**
 */
+
 class PitchShifterAudioProcessor  : public juce::AudioProcessor
 {
     public:
@@ -67,6 +68,18 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceT;
     std::shared_ptr<services::SpectrumBufferQueueService> spectrumBufferServiceN;
     
+    juce::RangedAudioParameter& getPitchShiftParam() { return *pitchShiftParam; }
+    juce::RangedAudioParameter& getBoundsSinesParam() { return *boundsSinesParam; }
+    juce::RangedAudioParameter& getBoundsTransientsParam() { return *boundsTransientsParam; }
+    juce::RangedAudioParameter& getFFTSizeParam() { return *fftSizeParam; }
+    
+    const int pitchShiftMin{-12};
+    const int pitchShiftMax{24};
+    
+    const int fftSizes[4]{512, 1024, 2048, 4096};
+    
+    const float minBounds{0.4f};
+    const float maxBounds{0.9f};
     
     private:
     //==============================================================================
@@ -75,7 +88,7 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     //==============================================================================
     
     juce::AudioParameterChoice* fftSizeParam;
-    int fftSizes[4]{512, 1024, 2048, 4096};
+    
     
     juce::AudioParameterInt* pitchShiftParam;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> pitchShiftSmoothing;
@@ -84,8 +97,6 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     juce::AudioParameterFloat* boundsTransientsParam;
     
     float pitchShift{1.f};
-    const int pitchShiftMin{-12};
-    const int pitchShiftMax{24};
     
     const double pitchBlockMs{50.};
     const int smoothingRate{10}; // number of steps to reach target value

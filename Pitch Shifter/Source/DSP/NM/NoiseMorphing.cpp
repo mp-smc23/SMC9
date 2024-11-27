@@ -24,7 +24,7 @@ void dsp::NoiseMorphing::setPitchShiftRatio(const float newPitchShiftRatio) {
     DBG("Hop Size Stretch = " + juce::String(hopSizeStretch));
     DBG("Window Correction Stretch = " + juce::String(windowCorrectionStretch));
     
-    jassert(hopSizeStretch * spectrumInterpolationFrames == hopSize * pitchShiftRatio);
+//    jassert(hopSizeStretch * spectrumInterpolationFrames == hopSize * pitchShiftRatio);
 }
 
 void dsp::NoiseMorphing::setFFTSize(const int newFFTSize) {

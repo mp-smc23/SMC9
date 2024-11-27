@@ -15,6 +15,7 @@ namespace components
         void pushBuffer(const std::vector<std::vector<float>>& bufferToPush) const;
         void setWaveformColour(juce::Colour waveformColour) noexcept;
         void setWaveformLength(int bufferSize);
+        void setRadius(int radius) noexcept { this->radius = radius; }
         void paint(juce::Graphics&) override;
         void clear() const;
 
@@ -22,6 +23,7 @@ namespace components
 
         std::unique_ptr<helpers::ChannelInfo> channels;
         juce::Colour waveformColour;
+        int radius{15};
         int maxWaveformLength;
         int currentWaveformLength;
 

@@ -47,10 +47,14 @@ void components::AudioVisualizer::paint(juce::Graphics& g)
     const auto r = getLocalBounds().toFloat();
     const auto area = r.reduced(0.f,r.getHeight()*0.1f);
     g.setColour(waveformColour);
-
+    
     juce::Path p;
     getWaveformAsPath(p, channels->getLevels());
 
+    juce::Path p2;
+    p2.addRoundedRectangle(r, radius);
+    g.reduceClipRegion(p2);
+    
     g.fillPath(p, juce::AffineTransform::fromTargetPoints(0.0f, -1.0f, area.getX(), area.getY(),
         0.0f, 1.0f, area.getX(), area.getBottom(),
         static_cast<float>(currentWaveformLength), -1.0f, area.getRight(), area.getY()));

@@ -16,6 +16,11 @@ components::WaveformGraph::~WaveformGraph()
     stopTimer();
 }
 
+void components::WaveformGraph::setWaveformColour(const juce::Colour colour)
+{
+    waveform->setWaveformColour(colour);
+}
+
 std::shared_ptr<components::AudioVisualizer> components::WaveformGraph::waveformSetUp(const juce::Colour colour) const
 {
     auto waveform = std::make_shared<AudioVisualizer>(maxWaveformLength, curSamplesPerBlock);
@@ -30,28 +35,18 @@ void components::WaveformGraph::paint(juce::Graphics& g)
     const auto r = getLocalBounds().toFloat();
     const auto h = r.getHeight();
     const auto w = r.getWidth();
-    constexpr auto segments = 10;
 
     const juce::Rectangle<float> area(0, 0, w, h);
     juce::Path p;
 
-    p.addRoundedRectangle(area, 5);
+    p.addRoundedRectangle(area, cornerRadius);
     g.reduceClipRegion(p);
 
-    g.setColour(juce::Colour(10, 10, 10));
+    g.setColour(backgroundColour);
     g.fillRect(area); //insides
 
-    g.setColour(juce::Colour(39, 39, 39));
-
-    for (auto i = 0; i < segments; i++)
-    {
-        g.drawVerticalLine(static_cast<int>(w / segments * (i + 1)), 0, h);
-    }
-
-    for (auto i = 0; i < segments; i++)
-    {
-        g.drawHorizontalLine(static_cast<int>(h / segments * (i + 1)), 0, w);
-    }
+    g.setColour(axesColour);
+    g.drawHorizontalLine(h / 2.f, 0, w);
 }
 
 

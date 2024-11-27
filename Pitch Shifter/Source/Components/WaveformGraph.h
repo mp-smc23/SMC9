@@ -15,7 +15,17 @@ namespace components
         void setRepaintRate(int frequencyInHz);
         void paint(juce::Graphics& g) override;
         void resized() override;
+        
+        void setWaveformColour(juce::Colour colour);
+        void setBackgroundColour(juce::Colour colour) { backgroundColour = colour; };
+        void setAxesColour(juce::Colour colour) { axesColour = colour; };
+        void setCornerRadius(int radius) { cornerRadius = radius; waveform->setRadius(radius); };
+        
     private:
+        juce::Colour backgroundColour = juce::Colours::black;
+        juce::Colour axesColour = juce::Colours::white;
+        int cornerRadius{45};
+        
         [[nodiscard]] std::shared_ptr<AudioVisualizer> waveformSetUp(juce::Colour colour) const;
 
         const int minWaveformLength = 256;
