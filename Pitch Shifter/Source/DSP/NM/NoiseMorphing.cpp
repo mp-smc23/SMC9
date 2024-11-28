@@ -89,10 +89,7 @@ void dsp::NoiseMorphing::processFrame() {
             noiseMorphing(fft);
         }
 
-        inverseFFT.performRealOnlyInverseTransform(fft.data());
-        
-        juce::FloatVectorOperations::multiply(fft.data(), window.data(), fftSize); // windowing
-        juce::FloatVectorOperations::multiply(fft.data(), windowCorrectionStretch, fftSize); // overlap add scaling
+        inverseFFT.performRealOnlyInverseTransform(fft.data()); // IFFT
         
         for (auto j = 0; j < fftSize; j++) {
             stretched[(writePtrStretched + j) % stretched.size()] += fft[j];

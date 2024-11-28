@@ -154,25 +154,16 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     DBG("Decompose STN: " << decomposeSTN.getLatency());
     DBG("Noise Morphing: " << noiseMorphing.getLatency());
     
-    const auto maxLatencySTN = juce::jmax(noiseMorphing.getLatency(), (stretch.inputLatency() + stretch.outputLatency()));
-    const auto sinesLatency = maxLatencySTN - (stretch.inputLatency() + stretch.outputLatency());
-    const auto transientsLatency = maxLatencySTN;
-    const auto noiseLatency = maxLatencySTN - noiseMorphing.getLatency();
-    setLatencySamples(decomposeSTN.getLatency() + maxLatencySTN);
-    
     sinesDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
-    sinesDelayLine.setMaximumDelayInSamples(sinesLatency);
-    sinesDelayLine.setDelay(sinesLatency);
+    sinesDelayLine.setMaximumDelayInSamples(maxLatencySTN);
     sinesDelayLine.reset();
     
     transientsDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
-    transientsDelayLine.setMaximumDelayInSamples(transientsLatency);
-    transientsDelayLine.setDelay(transientsLatency);
+    transientsDelayLine.setMaximumDelayInSamples(maxLatencySTN);
     transientsDelayLine.reset();
     
     noiseDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
-    noiseDelayLine.setMaximumDelayInSamples(noiseLatency);
-    noiseDelayLine.setDelay(noiseLatency);
+    noiseDelayLine.setMaximumDelayInSamples(maxLatencySTN);
     noiseDelayLine.reset();
 }
 
@@ -221,6 +212,16 @@ void PitchShifterAudioProcessor::getParametersValues(){
     const auto fftSize = fftSizes[fftSizeParam->getIndex()];
     decomposeSTN.setWindowS(fftSize);
     decomposeSTN.setWindowTN(static_cast<int>(fftSize * 0.25f));
+
+    maxLatencySTN = juce::jmax(noiseMorphing.getLatency(), (stretch.inputLatency() + stretch.outputLatency()));
+    const auto sinesLatency = maxLatencySTN - (stretch.inputLatency() + stretch.outputLatency());
+    const auto transientsLatency = maxLatencySTN;
+    const auto noiseLatency = maxLatencySTN - noiseMorphing.getLatency();
+    setLatencySamples(decomposeSTN.getLatency() + maxLatencySTN);
+    
+    sinesDelayLine.setDelay(sinesLatency);
+    transientsDelayLine.setDelay(transientsLatency);
+    noiseDelayLine.setDelay(noiseLatency);
 }
 
 
@@ -234,6 +235,11 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.clear (i, 0, buffer.getNumSamples());
 
     const auto numSamples = buffer.getNumSamples();
+    
+//    TODO: delete afetr debbuging
+//    for(auto i = 0; i < numSamples; i++){
+//        buffer.getWritePointer(0)[i] = ((double) rand() / (RAND_MAX));
+//    }
     
     // ===== Get Parameters =====
     getParametersValues();
@@ -273,7 +279,7 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     buffer.addFrom(0, 0, abT, 0, 0, numSamples);
     buffer.addFrom(0, 0, abN, 0, 0, numSamples);
     
-    buffer.copyFrom (1, 0, buffer.getReadPointer (0), buffer.getNumSamples());
+    buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
     
     // ===== Plotting =====
     waveformBufferServiceS->insertBuffers(abS);

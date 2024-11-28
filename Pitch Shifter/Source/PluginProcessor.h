@@ -111,12 +111,14 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     juce::AudioBuffer<float> abT;
     juce::AudioBuffer<float> abN;
        
-    juce::dsp::DelayLine<float> sinesDelayLine;
-    juce::dsp::DelayLine<float> transientsDelayLine;
-    juce::dsp::DelayLine<float> noiseDelayLine;
+    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::None> sinesDelayLine;
+    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::None> transientsDelayLine;
+    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::None> noiseDelayLine;
     
     std::vector<float *> outputSinesPtrs;
     std::vector<std::vector<float>> outputSinesBuf;
+    
+    int maxLatencySTN{0};
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PitchShifterAudioProcessor)
 };

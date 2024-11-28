@@ -2,8 +2,8 @@
 
 dsp::DecomposeSTN::DecomposeSTN(
     std::shared_ptr<juce::dsp::ProcessSpec> procSpec)
-    : processSpec(procSpec), forwardFFT(13), inverseFFTS(13), inverseFFTTN(13), forwardFFTTN(9),
-      inverseFFTT(9), inverseFFTN(9){};
+    : processSpec(procSpec), sinesDelayLine(1024), forwardFFT(13), inverseFFTS(13), inverseFFTTN(13), forwardFFTTN(9),
+inverseFFTT(9), inverseFFTN(9) {};
 
 void dsp::DecomposeSTN::setWindowS(const int newWindowSizeS) {
     // Assert power of two
@@ -73,6 +73,10 @@ void dsp::DecomposeSTN::fuzzySTN(STN& stn, Vec1D& rt,
         }
 
         stn.N[i] = 1 - stn.S[i] - stn.T[i];
+        jassert(stn.N[i] <= 1.f);
+        jassert(stn.T[i] <= 1.f);
+        jassert(stn.S[i] <= 1.f);
+        jassert(stn.S[i] + stn.T[i] + stn.N[i] == 1.f);
     }
 }
 
@@ -103,31 +107,35 @@ void dsp::DecomposeSTN::process(const juce::AudioBuffer<float> &buffer,
     auto dataN = N.getWritePointer(0);
     
     for(auto i = 0; i < numSamples; i++){
-        bufferInput[writePtr] = data[i];
-        bufferTNSmall[writePtr2++] = bufferTN[writePtr];
-        bufferTN[writePtr] = 0;
+        bufferInput[inputWritePtr] = data[i];
+    
+        sinesDelayLine.pushSample(0, bufferS[bufferSTN1ReadWritePtr]);
         
-        writePtr++;
-        if(writePtr >= bufferInput.size()) writePtr = 0; // circular buffer
-        if(writePtr2 >= bufferTNSmall.size()) writePtr2 = 0; // circular buffer
+        dataS[i] = sinesDelayLine.popSample(0);
+        dataT[i] = bufferT[bufferSTN2ReadWritePtr];
+        dataN[i] = bufferN[bufferSTN2ReadWritePtr];
         
-        dataS[i] = bufferS[readPtr];
-        dataT[i] = bufferT[readPtr];
-        dataN[i] = bufferN[readPtr];
-        bufferS[readPtr] = bufferT[readPtr] = bufferN[readPtr] = 0.f;
-        readPtr++;
+        inputTN[inputTNWritePtr] = bufferTN[bufferSTN1ReadWritePtr];
         
-        if(readPtr >= bufferS.size()) readPtr = 0;
+        bufferS[bufferSTN1ReadWritePtr] =  0;
+        bufferTN[bufferSTN1ReadWritePtr] = 0;
+        bufferT[bufferSTN2ReadWritePtr] = 0;
+        bufferN[bufferSTN2ReadWritePtr] = 0;
+        
+        if(++inputWritePtr >= bufferInput.size()) inputWritePtr = 0; // circular buffer
+        if(++bufferSTN1ReadWritePtr >= bufferS.size()) bufferSTN1ReadWritePtr = 0; // circular buffer
+        if(++inputTNWritePtr >= inputTN.size()) inputTNWritePtr = 0; // circular buffer
+        if(++bufferSTN2ReadWritePtr >= bufferT.size()) bufferSTN2ReadWritePtr = 0; // circular buffer
         
         newSamplesCount++;
         if(newSamplesCount >= hopSizeS){
-            decompose_1(writePtr);
+            decompose_1(inputWritePtr);
             newSamplesCount = 0;
         }
         
         newSamplesCount2++;
         if(newSamplesCount2 >= hopSizeTN){
-            decompose_2(writePtr2);
+            decompose_2(inputTNWritePtr);
             newSamplesCount2 = 0;
         }
          
@@ -171,12 +179,11 @@ void dsp::DecomposeSTN::decompose_1(const int ptr){
     juce::FloatVectorOperations::multiply(fft_1_tn.data(), windowS.data(), fftSizeS); // windowing
     
     juce::FloatVectorOperations::multiply(fft_1.data(), windowCorrection, fftSizeS); // overlap add scaling
-    
     juce::FloatVectorOperations::multiply(fft_1_tn.data(), windowCorrection, fftSizeS); // overlap add scaling
     
     for (auto j = 0; j < fftSizeS; j++) {
-        bufferS[(readPtr + j) % bufferS.size()] += fft_1[j];
-        bufferTN[(ptr + j) % bufferTN.size()] += fft_1_tn[j];
+        bufferS[(bufferSTN1ReadWritePtr + j) % bufferS.size()] += fft_1[j];
+        bufferTN[(bufferSTN1ReadWritePtr + j) % bufferTN.size()] += fft_1_tn[j];
     }
 }
 
@@ -184,8 +191,8 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     
     // Round 2
     // Copy new samples to FFT vector
-    juce::FloatVectorOperations::copy(fft_2.data(), bufferTNSmall.data() + ptr, fftSizeTN - ptr);
-    juce::FloatVectorOperations::copy(fft_2.data() + (fftSizeTN - ptr), bufferTNSmall.data(), ptr);
+    juce::FloatVectorOperations::copy(fft_2.data(), inputTN.data() + ptr, fftSizeTN - ptr);
+    juce::FloatVectorOperations::copy(fft_2.data() + (fftSizeTN - ptr), inputTN.data(), ptr);
 
     juce::FloatVectorOperations::multiply(fft_2.data(), windowTN.data(), fftSizeTN); // windowing
     forwardFFTTN.performRealOnlyForwardTransform(fft_2.data());
@@ -201,8 +208,8 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
              threshold_tn_1, threshold_tn_2,
              medianFilterHorTN, medianFilterVerTN);
 
-    juce::FloatVectorOperations::multiply(real_fft_2_t.data(), stn2.T.data(), fftSizeTN); // Apply sines mask
-    juce::FloatVectorOperations::multiply(imag_fft_2_t.data(), stn2.T.data(), fftSizeTN); // Apply sines mask
+    juce::FloatVectorOperations::multiply(real_fft_2_t.data(), stn2.T.data(), fftSizeTN); // Apply transients mask
+    juce::FloatVectorOperations::multiply(imag_fft_2_t.data(), stn2.T.data(), fftSizeTN); // Apply transients mask
 
     juce::FloatVectorOperations::add(stn2.N.data(), stn2.S.data(), fftSizeTN); // Add noise and sines masks
     juce::FloatVectorOperations::multiply(real_fft_2_ns.data(), stn2.N.data(), fftSizeTN); // Apply summed mask
@@ -222,19 +229,19 @@ void dsp::DecomposeSTN::decompose_2(const int ptr){
     juce::FloatVectorOperations::multiply(fft_2_ns.data(), windowCorrection, fftSizeTN); // overlap add scaling
 
     for (auto j = 0; j < fftSizeTN; j++) {
-        bufferT[(readPtr + j) % bufferT.size()] += fft_2[j];
-        bufferN[(readPtr + j) % bufferN.size()] += fft_2_ns[j];
+        bufferT[(bufferSTN2ReadWritePtr + j) % bufferT.size()] += fft_2[j];
+        bufferN[(bufferSTN2ReadWritePtr + j) % bufferN.size()] += fft_2_ns[j];
     }
-
 }
 
 void dsp::DecomposeSTN::prepare() {
     bufferInput.resize(fftSizeS);
-    bufferS.resize(fftSizeS + fftSizeTN);
-    bufferT.resize(fftSizeS + fftSizeTN);
-    bufferN.resize(fftSizeS + fftSizeTN);
+    bufferS.resize(fftSizeS);
     bufferTN.resize(fftSizeS);
-    bufferTNSmall.resize(fftSizeTN);
+    
+    inputTN.resize(fftSizeTN);
+    bufferT.resize(fftSizeTN);
+    bufferN.resize(fftSizeTN);
     
     const auto pow2S = log2(fftSizeS);
     forwardFFT = juce::dsp::FFT(pow2S);
@@ -251,6 +258,11 @@ void dsp::DecomposeSTN::prepare() {
     imag_fft_1_tn.resize(fftSizeS);
     rtS.resize(fftSizeS);
     stn1.resize(fftSizeS);
+    
+    sinesDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
+    sinesDelayLine.setMaximumDelayInSamples(fftSizeTN);
+    sinesDelayLine.setDelay(fftSizeTN);
+    sinesDelayLine.reset();
     
     juce::dsp::WindowingFunction<float>::fillWindowingTables(
         windowS.data(), fftSizeS,

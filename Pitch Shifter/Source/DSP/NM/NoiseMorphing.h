@@ -70,7 +70,6 @@ class NoiseMorphing {
     int hopSize{fftSize / overlap};
     int hopSizeStretch{512};
 
-    const float windowCorrection{4.f / 3.0f}; // overlap 50%
     float windowCorrectionStretch{4.f / 3.0f};
     float windowEnergy{1.f};
 
