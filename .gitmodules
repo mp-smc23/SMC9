@@ -4,3 +4,6 @@
 [submodule "libs/stretch"]
 	path = libs/stretch
 	url = https://github.com/Signalsmith-Audio/signalsmith-stretch.git
+[submodule "MUSHRA/webMUSHRA"]
+	path = MUSHRA/webMUSHRA
+	url = https://github.com/audiolabs/webMUSHRA.git
