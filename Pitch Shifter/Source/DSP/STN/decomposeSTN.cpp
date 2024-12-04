@@ -249,7 +249,7 @@ void dsp::DecomposeSTN::prepare() {
     inverseFFTTN = juce::dsp::FFT(pow2S);
 
     hopSizeS = fftSizeS / overlap;
-    windowS.resize(fftSizeS);
+    windowS.resize(fftSizeS + 1);
     fft_1.resize(fftSizeS*2);
     fft_1_tn.resize(fftSizeS*2);
     real_fft_1_s.resize(fftSizeS);
@@ -265,7 +265,7 @@ void dsp::DecomposeSTN::prepare() {
     sinesDelayLine.reset();
     
     juce::dsp::WindowingFunction<float>::fillWindowingTables(
-        windowS.data(), fftSizeS,
+        windowS.data(), fftSizeS + 1,
         juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
 
     medianFilterHorS.setFilterSize(std::div(static_cast<int>(filterLengthTime * processSpec->sampleRate), hopSizeS).quot);
@@ -280,7 +280,7 @@ void dsp::DecomposeSTN::prepare() {
     inverseFFTN = juce::dsp::FFT(pow2TN);
 
     hopSizeTN = fftSizeTN / overlap;
-    windowTN.resize(fftSizeTN);
+    windowTN.resize(fftSizeTN + 1);
     fft_2.resize(fftSizeTN * 2);
     fft_2_ns.resize(fftSizeTN * 2);
     real_fft_2_t.resize(fftSizeTN);
@@ -291,7 +291,7 @@ void dsp::DecomposeSTN::prepare() {
     stn2.resize(fftSizeTN);
 
     juce::dsp::WindowingFunction<float>::fillWindowingTables(
-        windowTN.data(), fftSizeTN,
+        windowTN.data(), fftSizeTN + 1,
         juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false);
     
     medianFilterHorTN.setFilterSize(std::div(static_cast<int>(filterLengthTime * processSpec->sampleRate), hopSizeTN).quot);

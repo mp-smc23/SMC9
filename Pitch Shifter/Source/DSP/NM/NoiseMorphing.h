@@ -87,16 +87,17 @@ class NoiseMorphing {
     juce::dsp::FFT inverseFFT;
 
     Vec1D window;            // hann window
+    Vec1D windowNoise;       // normalized hann window for white noise STFT
     Vec1D input;             // input buffer for storing incoming audio samples
     Vec1D whiteNoise;        // generated white noise
     Vec1D stretched;         // stretched noise - circular
     Vec1D stretchedUnwinded; // stretched noise - when filled next sample is always at idx 0
     Vec1D output;            // resampled output buffer
 
-    Vec1D fft;        // buffer for fft processing of input
-    Vec1D fftAbs;     // absolute values of the fft
-    Vec1D fftAbsPrev; // previous absolute values of the fft
-    Vec1D fftNoise;   // buffer for fft processing of noise
+    Vec1D fft;         // buffer for fft processing of input
+    Vec1D fftAbs;      // absolute values of the fft
+    Vec1D fftAbsPrev;  // previous absolute values of the fft
+    Vec1D fftNoise;    // buffer for fft processing of noise
 
     Vec2D interpolatedFrames; // interpolated spectral frames
 

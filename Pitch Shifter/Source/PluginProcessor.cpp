@@ -155,15 +155,15 @@ void PitchShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     DBG("Noise Morphing: " << noiseMorphing.getLatency());
     
     sinesDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
-    sinesDelayLine.setMaximumDelayInSamples(maxLatencySTN);
+    sinesDelayLine.setMaximumDelayInSamples(4096);
     sinesDelayLine.reset();
     
     transientsDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
-    transientsDelayLine.setMaximumDelayInSamples(maxLatencySTN);
+    transientsDelayLine.setMaximumDelayInSamples(4096);
     transientsDelayLine.reset();
     
     noiseDelayLine.prepare({processSpec->sampleRate, processSpec->maximumBlockSize, 1});
-    noiseDelayLine.setMaximumDelayInSamples(maxLatencySTN);
+    noiseDelayLine.setMaximumDelayInSamples(4096);
     noiseDelayLine.reset();
 }
 
@@ -275,9 +275,9 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     
     // ===== S + T + N =====
-    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
+    buffer.copyFrom(0, 0, abN, 0, 0, numSamples);
+//    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
+//    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
     
     buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
     
