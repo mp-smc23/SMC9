@@ -59,3 +59,23 @@ Pitch Shifter/Builds/MacOSX/Pitch Shifter.xcodeproj/xcuserdata/
 Pitch Shifter/Profiling/
 
 Evaluation/Audio/Ableton Folder Info/
+
+MUSHRA/webMUSHRA-1.4.3/configs/
+
+MUSHRA/webMUSHRA-1.4.3/design/
+
+MUSHRA/webMUSHRA-1.4.3/lib/
+
+MUSHRA/webMUSHRA-1.4.3/service/
+
+*.ico
+
+MUSHRA/webMUSHRA-1.4.3/index.html
+
+MUSHRA/webMUSHRA-1.4.3/LICENSE.txt
+
+MUSHRA/webMUSHRA-1.4.3/README.md
+
+MUSHRA/webMUSHRA-1.4.3/startup.min.js
+
+MUSHRA/webMUSHRA-1.4.3/THIRD-PARTY-NOTICES.txt
