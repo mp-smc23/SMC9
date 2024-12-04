@@ -36,8 +36,8 @@ PitchShifterAudioProcessor::PitchShifterAudioProcessor()
     spectrumBufferServiceN = std::make_shared<services::SpectrumBufferQueueService>();
     
     addParameter(pitchShiftParam = new juce::AudioParameterInt({"Pitch Shift", 1}, "Pitch Shift", pitchShiftMin, pitchShiftMax, 0));
-    addParameter(boundsSinesParam = new juce::AudioParameterFloat({"Bounds Sines", 1}, "Bounds Sines", minBounds, maxBounds, 0.6f));
-    addParameter(boundsTransientsParam = new juce::AudioParameterFloat({"Bounds Transients", 1}, "Bounds Transients", minBounds, maxBounds, 0.7f));
+    addParameter(boundsSinesParam = new juce::AudioParameterFloat({"Bounds Sines", 1}, "Bounds Sines", minBounds, maxBounds, 0.75f));
+    addParameter(boundsTransientsParam = new juce::AudioParameterFloat({"Bounds Transients", 1}, "Bounds Transients", minBounds, maxBounds, 0.8f));
     
     addParameter(fftSizeParam = new juce::AudioParameterChoice({"STN FFT Size", 1}, "STN FFT Size", {"512", "1024", "2048", "4096"}, 2));
     
@@ -236,11 +236,6 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     const auto numSamples = buffer.getNumSamples();
     
-//    TODO: delete afetr debbuging
-//    for(auto i = 0; i < numSamples; i++){
-//        buffer.getWritePointer(0)[i] = ((double) rand() / (RAND_MAX));
-//    }
-    
     // ===== Get Parameters =====
     getParametersValues();
     
@@ -275,9 +270,9 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     
     // ===== S + T + N =====
-    buffer.copyFrom(0, 0, abN, 0, 0, numSamples);
-//    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
-//    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
+    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
+    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
     
     buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
     

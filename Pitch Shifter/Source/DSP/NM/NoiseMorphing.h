@@ -1,7 +1,7 @@
 #pragma once
-#include "../Helpers/NoiseGenerator.h"
 #include "../Helpers/dsp.h"
 #include <JuceHeader.h>
+#include <random>
 
 using Vec1D = std::vector<float>;
 using Vec2D = std::vector<std::vector<float>>;
@@ -80,8 +80,11 @@ class NoiseMorphing {
     const int maxPitchShiftRatio{4};
 
     // ==== Noise ====
-    helpers::NoiseGenerator noiseGenerator;
-
+    const float mean = 0.0f;
+    const float stddev = 1.f;
+    std::mt19937 generator{std::random_device{}()};
+    std::normal_distribution<float> dist{mean, stddev};
+    
     juce::dsp::FFT forwardFFT;
     juce::dsp::FFT forwardFFTNoise;
     juce::dsp::FFT inverseFFT;
@@ -110,5 +113,6 @@ class NoiseMorphing {
     juce::WindowedSincInterpolator interpolator;
 
     std::shared_ptr<juce::dsp::ProcessSpec> processSpec;
+
 };
 } // namespace dsp

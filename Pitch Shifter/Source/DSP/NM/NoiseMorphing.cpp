@@ -18,7 +18,7 @@ void dsp::NoiseMorphing::setPitchShiftRatio(const float newPitchShiftRatio) {
     pitchShiftRatio = newPitchShiftRatio;
     spectrumInterpolationFrames = std::ceil(pitchShiftRatio);
 
-    hopSizeStretch = static_cast<int>(hopSize * pitchShiftRatio / static_cast<float>(spectrumInterpolationFrames));
+    hopSizeStretch = std::ceil(hopSize * pitchShiftRatio / static_cast<float>(spectrumInterpolationFrames));
     windowCorrectionStretch = 0.5 * fftSize / hopSizeStretch;
 
     DBG("Pitch Shift Ratio = " + juce::String(pitchShiftRatio));
@@ -68,27 +68,26 @@ void dsp::NoiseMorphing::processFrame() {
     forwardFFT.performRealOnlyForwardTransform(fft.data());                    // FFT
 
     helpers::absInterleavedFFT(fftAbs, fft, fftSize); // get abs value of noise
-    helpers::logMagnitudeSpectrum(fftAbs);            // log-magnitude spectrum
-
+    helpers::logMagnitudeSpectrum(fftAbs);            // log-magnitude spectrum ok
+    
     stretchSpectrum(interpolatedFrames, fftAbsPrev, fftAbs);
 
     juce::FloatVectorOperations::copy(fftAbsPrev.data(), fftAbs.data(),
                                       fftSize); // save current frame for next interpolation
     for (auto i = 0; i < spectrumInterpolationFrames; i++) {
         auto &frame = interpolatedFrames[i];
-        helpers::inverseLogMagnitudeSpectrum(frame);
-
+        helpers::inverseLogMagnitudeSpectrum(frame); // ok
+        
         generateNoise(hopSizeStretch);
 
         if (!juce::approximatelyEqual(pitchShiftRatio, 1.f)) { // if pitch shift is 0 we don't need to do noise morphing
             // Copy frame to the fft vector, both real and imag are filled with abs spectrum.
             // This will be used in noise morphing to run element-wise multiplication of abs(X)*E
             // which, for each element, expands to (X.Real * E.Real + i * X.Real * E.Imag)
-            helpers::interleaveFFT(fft, frame, frame, fftSize);
+            helpers::interleaveFFT(fft, frame, frame, fftSize); // ok
 
             noiseMorphing(fft);
         }
-
         
         inverseFFT.performRealOnlyInverseTransform(fft.data()); // IFFT
         
@@ -141,11 +140,21 @@ void dsp::NoiseMorphing::interpolateFrames(Vec1D &dest, const Vec1D &frame1, con
 
 void dsp::NoiseMorphing::generateNoise(int size) {
     // generate as much noise as we need for morphing
-    const auto &noise = noiseGenerator.generateNormalizedNoise(size);
+    auto maxNoise = 0.f;
+    auto startPtr = writeReadPtrNoise;
+    for(auto j = 0; j < size; j++){
+        whiteNoise[writeReadPtrNoise] = dist(generator);
+        if(auto absNoise = std::abs(whiteNoise[writeReadPtrNoise]); absNoise > maxNoise){
+            maxNoise = absNoise;
+        }
+        writeReadPtrNoise++;
+        if(writeReadPtrNoise >= whiteNoise.size()) writeReadPtrNoise = 0;
+    }
 
-    const auto copyStepSamples = juce::jmin(static_cast<int>(whiteNoise.size()) - writeReadPtrNoise, size);
-    juce::FloatVectorOperations::copy(whiteNoise.data() + writeReadPtrNoise, noise.data(), copyStepSamples);
-    juce::FloatVectorOperations::copy(whiteNoise.data(), noise.data() + copyStepSamples, size - copyStepSamples);
+    for(auto j = 0; j < size; j++){
+        whiteNoise[startPtr++] /= maxNoise;
+        if(startPtr >= whiteNoise.size()) startPtr = 0;
+    }
 }
 
 void dsp::NoiseMorphing::noiseMorphing(Vec1D &dest) {
@@ -160,7 +169,7 @@ void dsp::NoiseMorphing::noiseMorphing(Vec1D &dest) {
     forwardFFTNoise.performRealOnlyForwardTransform(fftNoise.data()); // FFT
 
     // normalize by the frame energy to ensure spectral magnitude equals 1
-    juce::FloatVectorOperations::multiply(fftNoise.data(), 100.f / windowEnergy, fftSize * 2);
+    juce::FloatVectorOperations::multiply(fftNoise.data(), 3.f / windowEnergy, fftSize * 2);
 
     // multiply each frame of the white noise by the interpolated frame of the input's noise (dest)
     juce::FloatVectorOperations::multiply(dest.data(), fftNoise.data(), fftSize * 2); // element wise multiplication
@@ -195,17 +204,16 @@ void dsp::NoiseMorphing::prepare() {
         windowNoise.data(), fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, true);
 
     auto sumWindowSq = 0.f;
-    for (const auto &e : window) {
+    for (const auto &e : windowNoise) {
         sumWindowSq += e * e;
     }
-    windowEnergy = sumWindowSq;
+    windowEnergy = std::sqrt(sumWindowSq);
     
     const auto pow2S = log2(fftSize);
     forwardFFT = juce::dsp::FFT(pow2S);
     inverseFFT = juce::dsp::FFT(pow2S);
     forwardFFTNoise = juce::dsp::FFT(pow2S);
 
-    noiseGenerator.prepare(hopSize * maxPitchShiftRatio);
     interpolator.reset();
     DBG("getBaseLatency: " + juce::String(interpolator.getBaseLatency()));
 }

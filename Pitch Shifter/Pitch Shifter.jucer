@@ -46,8 +46,6 @@
         </GROUP>
         <GROUP id="{69CE35CA-77C8-BFBD-F323-EEA902BFDC01}" name="Helpers">
           <FILE id="MVJqaf" name="dsp.h" compile="0" resource="0" file="Source/DSP/Helpers/dsp.h"/>
-          <FILE id="DYnFYc" name="NoiseGenerator.h" compile="0" resource="0"
-                file="Source/DSP/Helpers/NoiseGenerator.h"/>
         </GROUP>
         <GROUP id="{4E947770-8F6C-4524-F2DB-D4CEE753AE16}" name="NM">
           <FILE id="KdhwlK" name="NoiseMorphing.cpp" compile="1" resource="0"
