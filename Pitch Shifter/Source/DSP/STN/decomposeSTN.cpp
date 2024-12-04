@@ -96,7 +96,6 @@ void dsp::DecomposeSTN::process(const juce::AudioBuffer<float> &buffer,
                                 juce::AudioBuffer<float> &S,
                                 juce::AudioBuffer<float> &T,
                                 juce::AudioBuffer<float> &N) {
-    // TODO STEREO - later
     const auto numSamples = buffer.getNumSamples();
     
     const auto data = buffer.getReadPointer(0);

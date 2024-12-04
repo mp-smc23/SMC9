@@ -204,7 +204,7 @@ void PitchShifterAudioProcessor::getParametersValues(){
     pitchShift = pitchShiftSmoothing.getNextValue();
     
     stretch.setTransposeFactor(pitchShift);
-    noiseMorphing.setPitchShiftSemitones(pitchShiftParam->get()); // TODO test with ratio not semitones
+    noiseMorphing.setPitchShiftRatio(pitchShift);
     
     decomposeSTN.setThresholdSines(boundsSinesParam->get());
     decomposeSTN.setThresholdTransients(boundsTransientsParam->get());

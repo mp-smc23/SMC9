@@ -73,7 +73,7 @@ class PitchShifterAudioProcessor  : public juce::AudioProcessor
     juce::RangedAudioParameter& getBoundsTransientsParam() { return *boundsTransientsParam; }
     juce::RangedAudioParameter& getFFTSizeParam() { return *fftSizeParam; }
     
-    const int pitchShiftMin{-12};
+    const int pitchShiftMin{-24};
     const int pitchShiftMax{24};
     
     const int fftSizes[4]{512, 1024, 2048, 4096};
