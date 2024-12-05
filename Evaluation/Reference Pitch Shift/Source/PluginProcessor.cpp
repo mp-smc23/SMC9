@@ -148,7 +148,7 @@ void ReferencePitchShiftAudioProcessor::processBlock (juce::AudioBuffer<float>& 
 {
     pitchShiftSmoothing.setTargetValue(std::powf(2.f, pitchShiftParam->get() / 12.f));
     pitchShift = pitchShiftSmoothing.getNextValue();
-    stretch.setTransposeFactor(pitchShift);
+//    stretch.setTransposeFactor(pitchShift);
     
     juce::ScopedNoDenormals noDenormals;
     const auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -161,17 +161,17 @@ void ReferencePitchShiftAudioProcessor::processBlock (juce::AudioBuffer<float>& 
     
     // ===== Pitch Shifting =====
     // = Sines by signal smith =
-    setLatencySamples(stretch.inputLatency() + stretch.outputLatency());
+//    setLatencySamples(stretch.inputLatency() + stretch.outputLatency());
     outputSinesPtrs[0] = outputSinesBuf[0].data();
-    
-    stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputSinesPtrs.data(), numSamples);
-    buffer.copyFrom(0, 0, outputSinesPtrs[0], numSamples);
-    buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
+//    
+//    stretch.process(buffer.getArrayOfReadPointers(), numSamples, outputSinesPtrs.data(), numSamples);ś
+
     
     // Interpolation
-//    setLatencySamples(interpolator.getBaseLatency());
-//    [[maybe_unused]] auto _ = interpolator.process(pitchShiftRatio, buffer.getReadPointer(0), outputSinesPtrs.data(), numSamples, numSamples, 1);
-
+    setLatencySamples(interpolator.getBaseLatency());
+    [[maybe_unused]] auto _ = interpolator.process(pitchShift, buffer.getReadPointer(0), outputSinesPtrs[0], numSamples, numSamples, 1);
+    buffer.copyFrom(0, 0, outputSinesPtrs[0], numSamples);
+    buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
 }
 
 //==============================================================================

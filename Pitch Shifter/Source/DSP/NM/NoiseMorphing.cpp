@@ -169,7 +169,7 @@ void dsp::NoiseMorphing::noiseMorphing(Vec1D &dest) {
     forwardFFTNoise.performRealOnlyForwardTransform(fftNoise.data()); // FFT
 
     // normalize by the frame energy to ensure spectral magnitude equals 1
-    juce::FloatVectorOperations::multiply(fftNoise.data(), 3.f / windowEnergy, fftSize * 2);
+    juce::FloatVectorOperations::multiply(fftNoise.data(), 2.f / windowEnergy, fftSize * 2);
 
     // multiply each frame of the white noise by the interpolated frame of the input's noise (dest)
     juce::FloatVectorOperations::multiply(dest.data(), fftNoise.data(), fftSize * 2); // element wise multiplication
