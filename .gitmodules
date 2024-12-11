@@ -7,3 +7,6 @@
 [submodule "MUSHRA/webMUSHRA"]
 	path = MUSHRA/webMUSHRA
 	url = https://github.com/audiolabs/webMUSHRA.git
+[submodule "Report"]
+	path = Report
+	url = https://git@git.overleaf.com/66e32b86d75bb7c833180666
