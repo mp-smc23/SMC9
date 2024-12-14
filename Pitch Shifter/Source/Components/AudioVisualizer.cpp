@@ -67,7 +67,7 @@ void components::AudioVisualizer::getWaveformAsPath(juce::Path& path, const juce
     for (int i = 0; i < currentWaveformLength; ++i)
     {
         const auto level = -(levels[start + i].getEnd());
-
+        if(std::isnan(level)) continue;;
         if (i == 0)
             path.startNewSubPath(0, level);
         else
@@ -76,6 +76,7 @@ void components::AudioVisualizer::getWaveformAsPath(juce::Path& path, const juce
 
     for (int i = maxWaveformLength; --i >= start;)
     {
+        if(std::isnan(levels[i].getStart())) continue;
         path.lineTo(static_cast<float>(i - start), -(levels[i].getStart()));
     }
 
