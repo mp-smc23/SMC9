@@ -11,6 +11,7 @@ def plotSpectogram(x, sr, title):
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
     librosa.display.specshow(S_db, x_axis='time', sr=sr)
     plt.colorbar() 
+    plt.ylabel('Frequency')
     plt.title(title)
 
 def plotSTN(x, xs, xt, xn, sr):

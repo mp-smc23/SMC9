@@ -268,14 +268,15 @@ void PitchShifterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const juce::dsp::ProcessContextReplacing<float> contextNoise(noiseAb);
     noiseDelayLine.process(contextNoise);
 
-    
-    // ===== S + T + N =====
-    buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abT, 0, 0, numSamples);
-    buffer.addFrom(0, 0, abN, 0, 0, numSamples);
-    
-    buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
-    
+    if(buffer.getNumChannels() > 0){
+        // ===== S + T + N =====
+        buffer.copyFrom(0, 0, abS, 0, 0, numSamples);
+        buffer.addFrom(0, 0, abT, 0, 0, numSamples);
+        buffer.addFrom(0, 0, abN, 0, 0, numSamples);
+    }
+    if(buffer.getNumChannels() > 1){
+        buffer.copyFrom (1, 0, buffer.getReadPointer(0), buffer.getNumSamples());
+    }
     // ===== Plotting =====
     waveformBufferServiceS->insertBuffers(abS);
     waveformBufferServiceT->insertBuffers(abT);

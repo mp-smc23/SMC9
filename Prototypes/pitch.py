@@ -90,6 +90,15 @@ if config.play_audio:
 
     input('Press Enter to continue')
 
+if config.visualize:
+    plt.figure(figsize=(6, 3))
+    plt.subplot(1,2,1)
+    ploting.plotSpectogram(audio, fs, 'Input Spectrum')
+    plt.subplot(1,2,2)
+    ploting.plotSpectogram(output, fs, 'Shifted Spectrum')
+    plt.tight_layout()
+    plt.savefig(f"../Graphics/{audio_file}.png")
+
 
 if config.visualize:
     plt.figure(figsize=(10, 10))
