@@ -1,4 +1,4 @@
-## A Real-Time Pitch-Shifting Method for Audio Signals
+## Low-latency Pitch-Shifting with STN decomposition
 Semester Project for SMC9 AAU CPH
 
 ### Description
